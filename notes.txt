@@ -1,0 +1,3 @@
+
+discord oauth2 link
+https://discord.com/api/oauth2/authorize?client_id=981513003038019624&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth2%2Fredirect&response_type=code&scope=guilds%20email

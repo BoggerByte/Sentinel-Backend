@@ -8,12 +8,15 @@ dropdb:
 	docker exec -it sentinel-db dropdb --username=root sentinel_db
 
 migrateup:
-	migrate -path ./migrations -database "postgresql://root:qwerty@localhost:5432/sentinel_db?sslmode=disable" -verbose up
+	migrate -path ./db/migration -database "postgresql://root:qwerty@localhost:5432/sentinel_db?sslmode=disable" up
 
 migratedown:
-	migrate -path ./migrations -database "postgresql://root:qwerty@localhost:5432/sentinel_db?sslmode=disable" -verbose down
+	migrate -path ./db/migration -database "postgresql://root:qwerty@localhost:5432/sentinel_db?sslmode=disable" down
 
-migratedrop:
-	migrate -path ./migrations -database "postgresql://root:qwerty@localhost:5432/sentinel_db?sslmode=disable" -verbose drop
+sqlc:
+	sqlc generate
 
-.PHONY: postgres createdb dropdb migrateup migratedown
+server:
+	go run main.go
+
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc server

@@ -1,0 +1,9 @@
+address: "localhost:8080"
+
+db:
+  driver: "postgres"
+  source: "postgresql"
+  host: "localhost"
+  port: "5432"
+  name: "sentinel_db"
+  ssl-mode: "disable"

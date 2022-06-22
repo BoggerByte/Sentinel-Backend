@@ -2,6 +2,9 @@
 .idea
 notes.txt
 
+# Enviroment
+*.env
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

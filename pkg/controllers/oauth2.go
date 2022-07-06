@@ -1,21 +1,34 @@
 package controllers
 
 import (
-	db "github.com/BoggerByte/Sentinel-backend.git/db/sqlc"
+	"encoding/json"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/forms"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/services"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/util"
+	"github.com/BoggerByte/Sentinel-backend.git/pub/objects"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"net/url"
 )
 
 type Oauth2Controller struct {
-	store                *db.Store
+	store                db.Store
+	config               util.Config
+	tokenMaker           token.Maker
 	discordOauth2Service *services.DiscordOauth2Service
 }
 
-func NewOauth2Controller(discordOauth2Service *services.DiscordOauth2Service) *Oauth2Controller {
+func NewOauth2Controller(
+	store db.Store,
+	config util.Config,
+	tokenMaker token.Maker,
+	discordOauth2Service *services.DiscordOauth2Service,
+) *Oauth2Controller {
 	return &Oauth2Controller{
-		store:                db.GetStore(),
+		store:                store,
+		config:               config,
+		tokenMaker:           tokenMaker,
 		discordOauth2Service: discordOauth2Service,
 	}
 }
@@ -26,68 +39,119 @@ func (ctrl *Oauth2Controller) GenerateURL(c *gin.Context) {
 	})
 }
 
-type oauth2RedirectRequest struct {
-	Code  string `form:"code" binding:"required"`
-	State string `form:"state"`
-}
-
 func (ctrl *Oauth2Controller) HandleRedirect(c *gin.Context) {
-	var req oauth2RedirectRequest
-	if err := c.ShouldBindQuery(&req); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	var from forms.Oauth2RedirectForm
+	if err := c.ShouldBindQuery(&from); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	token, err := ctrl.discordOauth2Service.Exchange(req.Code)
+	// obtaining user data using Discord oauth2 API
+	dToken, err := ctrl.discordOauth2Service.Exchange(from.Code)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	dUser, err := ctrl.discordOauth2Service.GetUser(dToken)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	dGuilds, err := ctrl.discordOauth2Service.GetUserGuilds(dToken)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	dUser, err := ctrl.discordOauth2Service.GetUser(token)
+	guildConfigObj := objects.DefaultGuildConfig
+	guildConfigJSON, err := json.Marshal(guildConfigObj)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-	dGuilds, err := ctrl.discordOauth2Service.GetUserGuilds(token)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	arg := db.CreateAdminTxParams{
-		Admin: db.CreateAdminParams{
+	// create user and his relations from obtained oauth2 data
+	err = ctrl.store.ExecTx(c, func(q *db.Queries) error {
+		_, err := q.CreateOrUpdateUser(c, db.CreateOrUpdateUserParams{
 			DiscordID:     dUser.ID,
 			Username:      dUser.Username,
 			Discriminator: dUser.Discriminator,
 			Verified:      dUser.Verified,
 			Email:         dUser.Email,
 			Avatar:        dUser.Avatar,
-			Flags:         dUser.Flags,
 			Banner:        dUser.Banner,
 			AccentColor:   dUser.AccentColor,
-			PublicFlags:   dUser.PublicFlags,
-		},
-	}
-	for _, dGuild := range dGuilds {
-		if dGuild.IsOwner {
-			gArg := db.CreateGuildParams{
-				DiscordID: dGuild.ID,
-				Name:      dGuild.Name,
-				Icon:      dGuild.Icon,
-				OwnerID:   dUser.ID,
-			}
-			arg.Guilds = append(arg.Guilds, gArg)
+		})
+		if err != nil {
+			return err
 		}
-	}
 
-	admin, err := ctrl.store.CreateAdminTx(c, arg)
+		for _, dGuild := range dGuilds {
+			if dGuild.IsOwner {
+				_, err = q.CreateOrUpdateGuild(c, db.CreateOrUpdateGuildParams{
+					DiscordID:      dGuild.ID,
+					Name:           dGuild.Name,
+					Icon:           dGuild.Icon,
+					OwnerDiscordID: dUser.ID,
+				})
+				if err != nil {
+					return err
+				}
+
+				_, err := q.TryCreateGuildConfig(c, db.TryCreateGuildConfigParams{
+					DiscordID: dGuild.ID,
+					Json:      guildConfigJSON,
+				})
+				if err != nil {
+					return err
+				}
+
+				dGuild.Permissions = 0xfffffffffff
+			}
+			_, err := q.CreateOrUpdateUserGuildRel(c, db.CreateOrUpdateUserGuildRelParams{
+				AccountDiscordID: dUser.ID,
+				GuildDiscordID:   dGuild.ID,
+				Permissions:      dGuild.Permissions,
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
-	c.JSON(http.StatusOK, admin)
+	accessToken, _, err := ctrl.tokenMaker.CreateToken(dUser.ID, ctrl.config.AccessTokenDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	refreshToken, refreshPayload, err := ctrl.tokenMaker.CreateToken(dUser.ID, ctrl.config.RefreshTokenDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
-	redirectURL := url.URL{Path: "/"}
-	c.Redirect(http.StatusFound, redirectURL.RequestURI())
+	session, err := ctrl.store.CreateSession(c, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		DiscordID:    refreshPayload.UserDiscordID,
+		RefreshToken: refreshToken,
+		UserAgent:    c.Request.UserAgent(),
+		ClientIp:     c.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"session_id":    session.ID,
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
 }

@@ -3,19 +3,28 @@ module github.com/BoggerByte/Sentinel-backend.git
 go 1.18
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.16.0
+	github.com/bwmarrin/snowflake v0.3.0
+	github.com/gin-contrib/gzip v0.0.5
 	github.com/gin-gonic/gin v1.8.1
-	github.com/jmoiron/sqlx v1.3.5
-	github.com/joho/godotenv v1.4.0
+	github.com/golang/mock v1.6.0
+	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.6
+	github.com/o1egl/paseto v1.0.0
 	github.com/ravener/discord-oauth2 v0.0.0-20220615092331-f6a9839c223e
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.12.0
+	github.com/stretchr/testify v1.7.2
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 )
 
 require (
+	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
+	github.com/aead/chacha20poly1305 v0.0.0-20170617001512-233f39982aeb // indirect
+	github.com/aead/poly1305 v0.0.0-20180717145839-3fee0db0b635 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/gin-contrib/gzip v0.0.5 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
@@ -32,14 +41,14 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
-	github.com/twinj/uuid v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/net v0.0.0-20220607020251-c690dde0001d // indirect
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
 	golang.org/x/text v0.3.7 // indirect

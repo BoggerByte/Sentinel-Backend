@@ -1,0 +1,11 @@
+address: "localhost:8080"
+
+db-driver: "postgres"
+db-protocol: "postgresql"
+db-host: "localhost"
+db-port: "5432"
+db-name: "sentinel_db"
+db-ssl-mode: "disable"
+
+token-access-duration: "15m"
+token-refresh-duration: "2h"

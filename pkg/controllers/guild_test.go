@@ -24,10 +24,10 @@ import (
 func generateRandomGuild() db.Guild {
 	return db.Guild{
 		ID:             int64(util.RandomInt(1, 1000)),
-		DiscordID:      util.GenerateSnowflakeID().Int64(),
+		DiscordID:      util.RandomSnowflakeID().Int64(),
 		Name:           gofakeit.AppName(),
 		Icon:           gofakeit.ImageURL(400, 400),
-		OwnerDiscordID: util.GenerateSnowflakeID().Int64(),
+		OwnerDiscordID: util.RandomSnowflakeID().Int64(),
 	}
 }
 

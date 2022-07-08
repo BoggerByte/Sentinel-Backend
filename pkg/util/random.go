@@ -11,7 +11,7 @@ func RandomInt(min int, max int) int {
 	return rand.Intn(max-min+1) + min
 }
 
-func GenerateSnowflakeID() snowflake.ID {
+func RandomSnowflakeID() snowflake.ID {
 	node, _ := snowflake.NewNode(1)
 	return node.Generate()
 }

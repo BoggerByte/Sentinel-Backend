@@ -1,5 +1,18 @@
 postgres:
-	docker run --name=sentinel-db -e POSTGRES_USER='root' -e POSTGRES_PASSWORD='qwerty' -p 0.0.0.0:5432:5432 -d --rm postgres:14.3
+	docker run -d \
+		-e POSTGRES_USER='root' \
+		-e POSTGRES_PASSWORD='qwerty' \
+		-p 5432:5432 \
+		--rm \
+		--name=sentinel-db \
+		postgres:14.3
+
+redis:
+	docker run -d \
+		-p 6379:6379 \
+		--rm \
+		--name=sentinel-redis \
+		redis /bin/sh -c 'redis-server --appendonly yes --requirepass qwerty'
 
 createdb:
 	docker exec -it sentinel-db createdb --username=root --owner=root sentinel_db
@@ -18,8 +31,9 @@ sqlc:
 
 mock:
 	mockgen -package mockdb -destination pkg/db/mock/store.go github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc Store
+	mockgen -package mockmemdb -destination pkg/db/memory_mock/store.go github.com/BoggerByte/Sentinel-backend.git/pkg/db/memory Store
 
 server:
 	go run cmd/main.go
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc server
+.PHONY: postgres redis createdb createmdb dropdb migrateup migratedown sqlc server

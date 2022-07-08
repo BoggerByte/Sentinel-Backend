@@ -47,8 +47,7 @@ CREATE TABLE IF NOT EXISTS "session"
     "client_ip"     varchar     NOT NULL,
     "is_blocked"    boolean     NOT NULL DEFAULT false,
     "expires_at"    timestamptz NOT NULL,
-    "created_at"    timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT "account_fk" FOREIGN KEY ("discord_id") REFERENCES "user" ("discord_id")
+    "created_at"    timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX ON "user" ("discord_id");

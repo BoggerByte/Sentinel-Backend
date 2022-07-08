@@ -7,6 +7,7 @@ type Account interface {
 }
 
 type Auth interface {
+	FinalizeLogin(c *gin.Context)
 	RefreshToken(c *gin.Context)
 }
 
@@ -21,8 +22,8 @@ type GuildConfig interface {
 }
 
 type Oauth2 interface {
-	GenerateURL(c *gin.Context)
-	HandleRedirect(c *gin.Context)
+	NewURL(c *gin.Context)
+	DiscordCallback(c *gin.Context)
 }
 
 type Controllers struct {

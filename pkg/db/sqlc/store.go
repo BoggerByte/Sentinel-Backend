@@ -28,9 +28,9 @@ type ConnectionConfig struct {
 	SSLMode  string
 }
 
-func Init(config ConnectionConfig) (*SQLStore, error) {
-	conn, err := sql.Open(config.Driver, fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
-		config.Protocol, config.Username, config.Password, config.Host, config.Port, config.Name, config.SSLMode))
+func NewSQLStore(cfg ConnectionConfig) (Store, error) {
+	conn, err := sql.Open(cfg.Driver, fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.Protocol, cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Name, cfg.SSLMode))
 	if err != nil {
 		return nil, err
 	}

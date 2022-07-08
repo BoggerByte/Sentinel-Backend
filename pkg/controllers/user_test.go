@@ -24,7 +24,7 @@ import (
 func generateRandomUser() db.User {
 	return db.User{
 		ID:            int64(util.RandomInt(1, 1000)),
-		DiscordID:     util.GenerateSnowflakeID().Int64(),
+		DiscordID:     util.RandomSnowflakeID().Int64(),
 		Username:      gofakeit.Username(),
 		Discriminator: fmt.Sprintf("%04d", util.RandomInt(1, 9999)),
 		Verified:      gofakeit.Bool(),

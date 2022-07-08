@@ -18,6 +18,9 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 	router.LoadHTMLGlob("./pub/html/*")
 	router.Static("/pub", "./pub")
 
+	router.Use(middlewares.CORS)
+	router.Use(gzip.Gzip(gzip.DefaultCompression))
+
 	perms := middlewares.Permissions
 
 	/* INITIALIZING ROUTES */
@@ -30,12 +33,12 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 		c.HTML(http.StatusNotFound, "404.html", gin.H{})
 	})
 
-	api := router.Group("/api/v1").
-		Use(gzip.Gzip(gzip.DefaultCompression))
+	api := router.Group("/api/v1")
 	{
-		api.GET("/oauth2/generate_url", controllers.Oauth2.GenerateURL)
-		api.GET("/oauth2/redirect", controllers.Oauth2.HandleRedirect)
+		api.GET("/oauth2/new_url", controllers.Oauth2.NewURL)
+		api.GET("/oauth2/discord_callback", controllers.Oauth2.DiscordCallback)
 
+		api.POST("/auth/paseto/finalize_login", controllers.Auth.FinalizeLogin)
 		api.POST("/auth/paseto/refresh", middlewares.Auth, controllers.Auth.RefreshToken)
 
 		api.GET("/users/me", middlewares.Auth, controllers.Account.Get)

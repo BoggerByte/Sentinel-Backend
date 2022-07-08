@@ -14,7 +14,7 @@ func NewDiscordOauth2Service(config *oauth2.Config) *DiscordOauth2Service {
 	return &DiscordOauth2Service{config: config}
 }
 
-func (s *DiscordOauth2Service) GenerateURL(state string) string {
+func (s *DiscordOauth2Service) NewURL(state string) string {
 	return s.config.AuthCodeURL(state)
 }
 

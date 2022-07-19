@@ -9,7 +9,7 @@ import (
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/forms"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/services"
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/util"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/BoggerByte/Sentinel-backend.git/pub/objects"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v9"
@@ -19,7 +19,7 @@ import (
 type Oauth2Controller struct {
 	store                db.Store
 	memStore             memdb.Store
-	config               util.Config
+	config               utils.Config
 	tokenMaker           token.Maker
 	discordOauth2Service *services.DiscordOauth2Service
 }
@@ -27,7 +27,7 @@ type Oauth2Controller struct {
 func NewOauth2Controller(
 	store db.Store,
 	memStore memdb.Store,
-	config util.Config,
+	config utils.Config,
 	tokenMaker token.Maker,
 	discordOauth2Service *services.DiscordOauth2Service,
 ) *Oauth2Controller {
@@ -41,7 +41,7 @@ func NewOauth2Controller(
 }
 
 func (ctrl *Oauth2Controller) NewURL(c *gin.Context) {
-	state := util.RandomString(32)
+	state := utils.RandomString(32)
 
 	err := ctrl.memStore.SetOauth2Flow(c, state, memdb.Oauth2Flow{
 		Completed:     false,
@@ -53,8 +53,8 @@ func (ctrl *Oauth2Controller) NewURL(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"url":       ctrl.discordOauth2Service.NewURL(state),
-		"stateJSON": state,
+		"url":   ctrl.discordOauth2Service.NewURL(state),
+		"state": state,
 	})
 }
 
@@ -70,6 +70,7 @@ func (ctrl *Oauth2Controller) DiscordCallback(c *gin.Context) {
 		if errors.Is(err, redis.Nil) {
 			err := errors.New("state not exists or expired")
 			c.JSON(http.StatusMethodNotAllowed, errorResponse(err))
+			return
 		}
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -149,14 +150,36 @@ func (ctrl *Oauth2Controller) DiscordCallback(c *gin.Context) {
 		return
 	}
 
-	err = ctrl.memStore.SetOauth2Flow(c, form.State, memdb.Oauth2Flow{
-		Completed:     true,
-		UserDiscordID: dUser.ID,
-	}, ctrl.config.Oauth2FlowStateDuration)
+	accessToken, _, err := ctrl.tokenMaker.CreateToken(dUser.ID, ctrl.config.AccessTokenDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	refreshToken, refreshPayload, err := ctrl.tokenMaker.CreateToken(dUser.ID, ctrl.config.RefreshTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	// redirect here
+	session, err := ctrl.store.CreateSession(c, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		DiscordID:    refreshPayload.UserDiscordID,
+		RefreshToken: refreshToken,
+		UserAgent:    c.Request.UserAgent(),
+		ClientIp:     c.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"session_id":       session.ID,
+		"access_token":     accessToken,
+		"access_duration":  ctrl.config.AccessTokenDuration.Milliseconds(),
+		"refresh_token":    refreshToken,
+		"refresh_duration": ctrl.config.RefreshTokenDuration.Milliseconds(),
+	})
 }

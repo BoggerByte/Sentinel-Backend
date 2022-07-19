@@ -6,26 +6,24 @@ import (
 	"fmt"
 	memdb "github.com/BoggerByte/Sentinel-backend.git/pkg/db/memory"
 	db "github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/forms"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/middlewares"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/util"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v9"
 	"net/http"
 )
 
 type AuthController struct {
 	store      db.Store
 	memStore   memdb.Store
-	config     util.Config
+	config     utils.Config
 	tokenMaker token.Maker
 }
 
 func NewAuthController(
 	store db.Store,
 	memStore memdb.Store,
-	config util.Config,
+	config utils.Config,
 	tokenMaker token.Maker,
 ) *AuthController {
 	return &AuthController{
@@ -34,67 +32,6 @@ func NewAuthController(
 		config:     config,
 		tokenMaker: tokenMaker,
 	}
-}
-
-func (ctrl *AuthController) FinalizeLogin(c *gin.Context) {
-	var json forms.LoginForm
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	oauth2Flow, err := ctrl.memStore.GetOauth2Flow(c, json.State)
-	if err != nil {
-		if errors.Is(err, redis.Nil) {
-			err := errors.New("state not exists or expired")
-			c.JSON(http.StatusMethodNotAllowed, errorResponse(err))
-			return
-		}
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	if !oauth2Flow.Completed {
-		err := errors.New("oauth2 flow is not completed")
-		c.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
-	accessToken, _, err := ctrl.tokenMaker.CreateToken(oauth2Flow.UserDiscordID, ctrl.config.AccessTokenDuration)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	refreshToken, refreshPayload, err := ctrl.tokenMaker.CreateToken(oauth2Flow.UserDiscordID, ctrl.config.RefreshTokenDuration)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	session, err := ctrl.store.CreateSession(c, db.CreateSessionParams{
-		ID:           refreshPayload.ID,
-		DiscordID:    refreshPayload.UserDiscordID,
-		RefreshToken: refreshToken,
-		UserAgent:    c.Request.UserAgent(),
-		ClientIp:     c.ClientIP(),
-		IsBlocked:    false,
-		ExpiresAt:    refreshPayload.ExpiredAt,
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	err = ctrl.memStore.DeleteOauth2Flow(c, json.State)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"session_id":    session.ID,
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	})
 }
 
 func (ctrl *AuthController) RefreshToken(c *gin.Context) {
@@ -122,13 +59,36 @@ func (ctrl *AuthController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	accessToken, _, err := ctrl.tokenMaker.CreateToken(refreshPayload.UserDiscordID, ctrl.config.AccessTokenDuration)
+	newAccessToken, _, err := ctrl.tokenMaker.CreateToken(refreshPayload.UserDiscordID, ctrl.config.AccessTokenDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	newRefreshToken, newRefreshPayload, err := ctrl.tokenMaker.CreateToken(refreshPayload.UserDiscordID, ctrl.config.RefreshTokenDuration)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	newSession, err := ctrl.store.CreateSession(c, db.CreateSessionParams{
+		ID:           newRefreshPayload.ID,
+		DiscordID:    newRefreshPayload.UserDiscordID,
+		RefreshToken: newRefreshToken,
+		UserAgent:    c.Request.UserAgent(),
+		ClientIp:     c.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"access_token": accessToken,
+		"session_id":       newSession.ID,
+		"access_token":     newAccessToken,
+		"access_duration":  ctrl.config.AccessTokenDuration.Milliseconds(),
+		"refresh_token":    newRefreshToken,
+		"refresh_duration": ctrl.config.RefreshTokenDuration.Milliseconds(),
 	})
 }

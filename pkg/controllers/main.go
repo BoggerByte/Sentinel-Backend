@@ -7,7 +7,6 @@ type Account interface {
 }
 
 type Auth interface {
-	FinalizeLogin(c *gin.Context)
 	RefreshToken(c *gin.Context)
 }
 

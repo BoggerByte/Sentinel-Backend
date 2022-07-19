@@ -38,7 +38,6 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 		api.GET("/oauth2/new_url", controllers.Oauth2.NewURL)
 		api.GET("/oauth2/discord_callback", controllers.Oauth2.DiscordCallback)
 
-		api.POST("/auth/paseto/finalize_login", controllers.Auth.FinalizeLogin)
 		api.POST("/auth/paseto/refresh", middlewares.Auth, controllers.Auth.RefreshToken)
 
 		api.GET("/users/me", middlewares.Auth, controllers.Account.Get)

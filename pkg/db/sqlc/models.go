@@ -13,8 +13,8 @@ import (
 
 type Guild struct {
 	ID             int64  `json:"id"`
-	DiscordID      int64  `json:"discord_id"`
-	OwnerDiscordID int64  `json:"owner_discord_id"`
+	DiscordID      string `json:"discord_id"`
+	OwnerDiscordID string `json:"owner_discord_id"`
 	Name           string `json:"name"`
 	Icon           string `json:"icon"`
 }
@@ -27,7 +27,7 @@ type GuildConfig struct {
 
 type Session struct {
 	ID           uuid.UUID `json:"id"`
-	DiscordID    int64     `json:"discord_id"`
+	DiscordID    string    `json:"discord_id"`
 	RefreshToken string    `json:"refresh_token"`
 	UserAgent    string    `json:"user_agent"`
 	ClientIp     string    `json:"client_ip"`
@@ -38,7 +38,7 @@ type Session struct {
 
 type User struct {
 	ID            int64  `json:"id"`
-	DiscordID     int64  `json:"discord_id"`
+	DiscordID     string `json:"discord_id"`
 	Username      string `json:"username"`
 	Discriminator string `json:"discriminator"`
 	Verified      bool   `json:"verified"`
@@ -51,7 +51,7 @@ type User struct {
 }
 
 type UserGuild struct {
-	AccountDiscordID int64 `json:"account_discord_id"`
-	GuildDiscordID   int64 `json:"guild_discord_id"`
-	Permissions      int64 `json:"permissions"`
+	AccountDiscordID string `json:"account_discord_id"`
+	GuildDiscordID   string `json:"guild_discord_id"`
+	Permissions      int64  `json:"permissions"`
 }

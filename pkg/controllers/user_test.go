@@ -9,7 +9,7 @@ import (
 	db "github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/middlewares"
 	token2 "github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/util"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
@@ -23,15 +23,15 @@ import (
 
 func generateRandomUser() db.User {
 	return db.User{
-		ID:            int64(util.RandomInt(1, 1000)),
-		DiscordID:     util.RandomSnowflakeID().Int64(),
+		ID:            int64(utils.RandomInt(1, 1000)),
+		DiscordID:     utils.RandomSnowflakeID().String(),
 		Username:      gofakeit.Username(),
-		Discriminator: fmt.Sprintf("%04d", util.RandomInt(1, 9999)),
+		Discriminator: fmt.Sprintf("%04d", utils.RandomInt(1, 9999)),
 		Verified:      gofakeit.Bool(),
 		Email:         gofakeit.Email(),
 		Avatar:        gofakeit.ImageURL(400, 400),
 		Banner:        gofakeit.ImageURL(400, 400),
-		AccentColor:   int64(util.RandomInt(0, 1<<24)),
+		AccentColor:   int64(utils.RandomInt(0, 1<<24)),
 		CreatedAt:     gofakeit.Date(),
 	}
 }
@@ -55,7 +55,7 @@ func TestUserController_Get(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		userDiscordID int64
+		userDiscordID string
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
@@ -110,7 +110,7 @@ func TestUserController_Get(t *testing.T) {
 
 			tc.buildStubs(store)
 			// build server
-			tokenMaker, _ := token2.NewPasetoMaker(util.RandomString(32))
+			tokenMaker, _ := token2.NewPasetoMaker(utils.RandomString(32))
 			authMiddleware := middlewares.NewAuthMiddleware(tokenMaker)
 			userController := NewUserController(store)
 			router := gin.New()

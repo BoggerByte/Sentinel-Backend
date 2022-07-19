@@ -23,7 +23,7 @@ func (s *DiscordOauth2Service) Exchange(code string) (*oauth2.Token, error) {
 }
 
 type DiscordUser struct {
-	ID            int64  `json:"id,string"`
+	ID            string `json:"id"`
 	Username      string `json:"username"`
 	Discriminator string `json:"discriminator"`
 	Avatar        string `json:"avatar"`
@@ -49,7 +49,7 @@ func (s *DiscordOauth2Service) GetUser(token *oauth2.Token) (DiscordUser, error)
 }
 
 type DiscordGuild struct {
-	ID          int64  `json:"id,string"`
+	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Icon        string `json:"icon"`
 	IsOwner     bool   `json:"owner"`

@@ -41,7 +41,7 @@ func TestGuildConfigController_Overwrite(t *testing.T) {
 
 	testCases := []struct {
 		name            string
-		guildDiscordID  int64
+		guildDiscordID  string
 		guildConfigJSON []byte
 		buildStubs      func(store *mockdb.MockStore)
 		checkResponse   func(t *testing.T, w *httptest.ResponseRecorder)
@@ -81,19 +81,6 @@ func TestGuildConfigController_Overwrite(t *testing.T) {
 			},
 		},
 		{
-			name:            "BadRequest/URI",
-			guildDiscordID:  -1,
-			guildConfigJSON: guildConfigJSON,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					CreateOrUpdateGuildConfig(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, w.Code)
-			},
-		},
-		{
 			name:            "BadRequest/JSON",
 			guildDiscordID:  guild.DiscordID,
 			guildConfigJSON: []byte("not_json"),
@@ -120,7 +107,7 @@ func TestGuildConfigController_Overwrite(t *testing.T) {
 			router := gin.New()
 			router.POST("/api/v1/guilds/:discord_id/config", guildConfigController.Overwrite)
 
-			url := fmt.Sprintf("/api/v1/guilds/%d/config", tc.guildDiscordID)
+			url := fmt.Sprintf("/api/v1/guilds/%s/config", tc.guildDiscordID)
 			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(tc.guildConfigJSON))
 			require.NoError(t, err)
 
@@ -156,7 +143,7 @@ func TestGuildConfigController_Get(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		guildDiscordID int64
+		guildDiscordID string
 		buildStubs     func(store *mockdb.MockStore)
 		checkResponse  func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
@@ -186,18 +173,6 @@ func TestGuildConfigController_Get(t *testing.T) {
 				require.Equal(t, http.StatusInternalServerError, w.Code)
 			},
 		},
-		{
-			name:           "BadRequest/URI",
-			guildDiscordID: -1,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					GetGuildConfig(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, w.Code)
-			},
-		},
 	}
 
 	for _, tc := range testCases {
@@ -212,7 +187,7 @@ func TestGuildConfigController_Get(t *testing.T) {
 			router := gin.New()
 			router.GET("/api/v1/guilds/:discord_id/config", guildConfigController.Get)
 
-			url := fmt.Sprintf("/api/v1/guilds/%d/config", tc.guildDiscordID)
+			url := fmt.Sprintf("/api/v1/guilds/%s/config", tc.guildDiscordID)
 			req, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 

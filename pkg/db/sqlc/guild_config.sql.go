@@ -21,7 +21,7 @@ RETURNING id, json, created_at
 `
 
 type CreateOrUpdateGuildConfigParams struct {
-	DiscordID int64           `json:"discord_id"`
+	DiscordID string          `json:"discord_id"`
 	Json      json.RawMessage `json:"json"`
 }
 
@@ -39,7 +39,7 @@ WHERE c.id = g.id
   AND g.discord_id = $1
 `
 
-func (q *Queries) DeleteGuildConfig(ctx context.Context, discordID int64) error {
+func (q *Queries) DeleteGuildConfig(ctx context.Context, discordID string) error {
 	_, err := q.db.ExecContext(ctx, deleteGuildConfig, discordID)
 	return err
 }
@@ -51,7 +51,7 @@ FROM guild g
 WHERE g.discord_id = $1
 `
 
-func (q *Queries) GetGuildConfig(ctx context.Context, discordID int64) (GuildConfig, error) {
+func (q *Queries) GetGuildConfig(ctx context.Context, discordID string) (GuildConfig, error) {
 	row := q.db.QueryRowContext(ctx, getGuildConfig, discordID)
 	var i GuildConfig
 	err := row.Scan(&i.ID, &i.Json, &i.CreatedAt)
@@ -68,7 +68,7 @@ RETURNING id, json, created_at
 `
 
 type TryCreateGuildConfigParams struct {
-	DiscordID int64           `json:"discord_id"`
+	DiscordID string          `json:"discord_id"`
 	Json      json.RawMessage `json:"json"`
 }
 
@@ -89,7 +89,7 @@ WHERE c.id = g.id
 
 type UpdateGuildConfigParams struct {
 	Json      json.RawMessage `json:"json"`
-	DiscordID int64           `json:"discord_id"`
+	DiscordID string          `json:"discord_id"`
 }
 
 func (q *Queries) UpdateGuildConfig(ctx context.Context, arg UpdateGuildConfigParams) error {

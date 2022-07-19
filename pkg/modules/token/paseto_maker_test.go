@@ -1,7 +1,7 @@
 package token
 
 import (
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/util"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -15,7 +15,7 @@ func TestNewPasetoMaker(t *testing.T) {
 	}{
 		{
 			name:         "OK",
-			symmetricKey: util.RandomString(32),
+			symmetricKey: utils.RandomString(32),
 			checkResult: func(t *testing.T, maker Maker, err error) {
 				require.NotEmpty(t, maker)
 				require.NoError(t, err)
@@ -39,13 +39,13 @@ func TestNewPasetoMaker(t *testing.T) {
 }
 
 func TestPasetoTokenMaker(t *testing.T) {
-	userDiscordID := util.RandomSnowflakeID().Int64()
+	userDiscordID := utils.RandomSnowflakeID().String()
 	issuedAt := time.Now()
 
 	testCases := []struct {
 		name          string
 		scope         string
-		userDiscordID int64
+		userDiscordID string
 		duration      time.Duration
 		checkVerify   func(t *testing.T, payload *Payload, err error)
 	}{
@@ -74,7 +74,7 @@ func TestPasetoTokenMaker(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			maker, err := NewPasetoMaker(util.RandomString(32))
+			maker, err := NewPasetoMaker(utils.RandomString(32))
 			require.NoError(t, err)
 
 			accessToken, _, err := maker.CreateToken(userDiscordID, tc.duration)

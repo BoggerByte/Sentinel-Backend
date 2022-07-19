@@ -9,7 +9,7 @@ import (
 	db "github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/middlewares"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/util"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
@@ -23,11 +23,11 @@ import (
 
 func generateRandomGuild() db.Guild {
 	return db.Guild{
-		ID:             int64(util.RandomInt(1, 1000)),
-		DiscordID:      util.RandomSnowflakeID().Int64(),
+		ID:             int64(utils.RandomInt(1, 1000)),
+		DiscordID:      utils.RandomSnowflakeID().String(),
 		Name:           gofakeit.AppName(),
 		Icon:           gofakeit.ImageURL(400, 400),
-		OwnerDiscordID: util.RandomSnowflakeID().Int64(),
+		OwnerDiscordID: utils.RandomSnowflakeID().String(),
 	}
 }
 
@@ -62,7 +62,7 @@ func TestGuildController_Get(t *testing.T) {
 
 	testCases := []struct {
 		name           string
-		guildDiscordID int64
+		guildDiscordID string
 		buildStubs     func(store *mockdb.MockStore)
 		checkResponse  func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
@@ -106,18 +106,6 @@ func TestGuildController_Get(t *testing.T) {
 				require.Equal(t, http.StatusInternalServerError, w.Code)
 			},
 		},
-		{
-			name:           "BadRequest/URI",
-			guildDiscordID: -1,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					GetGuild(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, w.Code)
-			},
-		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -131,7 +119,7 @@ func TestGuildController_Get(t *testing.T) {
 			router := gin.New()
 			router.GET("/api/v1/guilds/:discord_id", guildController.Get)
 
-			url := fmt.Sprintf("/api/v1/guilds/%d", tc.guildDiscordID)
+			url := fmt.Sprintf("/api/v1/guilds/%s", tc.guildDiscordID)
 			req, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
@@ -151,7 +139,7 @@ func TestGuildController_GetAll(t *testing.T) {
 	accountGuildRel := db.UserGuild{
 		GuildDiscordID:   guild.DiscordID,
 		AccountDiscordID: account.DiscordID,
-		Permissions:      1 << util.RandomInt(0, 40),
+		Permissions:      1 << utils.RandomInt(0, 40),
 	}
 	guildRow := db.GetUserGuildsRow{
 		ID:             guild.ID,
@@ -164,7 +152,7 @@ func TestGuildController_GetAll(t *testing.T) {
 
 	testCases := []struct {
 		name             string
-		accountDiscordID int64
+		accountDiscordID string
 		buildStubs       func(store *mockdb.MockStore)
 		checkResponse    func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
@@ -204,7 +192,7 @@ func TestGuildController_GetAll(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			tokenMaker, _ := token.NewPasetoMaker(util.RandomString(32))
+			tokenMaker, _ := token.NewPasetoMaker(utils.RandomString(32))
 			authMiddleware := middlewares.NewAuthMiddleware(tokenMaker)
 			guildController := NewGuildController(store)
 			router := gin.New()

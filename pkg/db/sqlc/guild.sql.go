@@ -20,10 +20,10 @@ RETURNING id, discord_id, owner_discord_id, name, icon
 `
 
 type CreateOrUpdateGuildParams struct {
-	DiscordID      int64  `json:"discord_id"`
+	DiscordID      string `json:"discord_id"`
 	Name           string `json:"name"`
 	Icon           string `json:"icon"`
-	OwnerDiscordID int64  `json:"owner_discord_id"`
+	OwnerDiscordID string `json:"owner_discord_id"`
 }
 
 func (q *Queries) CreateOrUpdateGuild(ctx context.Context, arg CreateOrUpdateGuildParams) (Guild, error) {
@@ -50,7 +50,7 @@ FROM guild
 WHERE discord_id = $1
 `
 
-func (q *Queries) DeleteGuild(ctx context.Context, discordID int64) error {
+func (q *Queries) DeleteGuild(ctx context.Context, discordID string) error {
 	_, err := q.db.ExecContext(ctx, deleteGuild, discordID)
 	return err
 }
@@ -62,7 +62,7 @@ WHERE discord_id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetGuild(ctx context.Context, discordID int64) (Guild, error) {
+func (q *Queries) GetGuild(ctx context.Context, discordID string) (Guild, error) {
 	row := q.db.QueryRowContext(ctx, getGuild, discordID)
 	var i Guild
 	err := row.Scan(
@@ -89,14 +89,14 @@ WHERE ug.account_discord_id = $1
 
 type GetUserGuildsRow struct {
 	ID             int64  `json:"id"`
-	DiscordID      int64  `json:"discord_id"`
+	DiscordID      string `json:"discord_id"`
 	Permissions    int64  `json:"permissions"`
-	OwnerDiscordID int64  `json:"owner_discord_id"`
+	OwnerDiscordID string `json:"owner_discord_id"`
 	Icon           string `json:"icon"`
 	Name           string `json:"name"`
 }
 
-func (q *Queries) GetUserGuilds(ctx context.Context, accountDiscordID int64) ([]GetUserGuildsRow, error) {
+func (q *Queries) GetUserGuilds(ctx context.Context, accountDiscordID string) ([]GetUserGuildsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUserGuilds, accountDiscordID)
 	if err != nil {
 		return nil, err

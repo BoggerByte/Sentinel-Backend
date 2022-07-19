@@ -18,9 +18,9 @@ RETURNING account_discord_id, guild_discord_id, permissions
 `
 
 type CreateOrUpdateUserGuildRelParams struct {
-	GuildDiscordID   int64 `json:"guild_discord_id"`
-	AccountDiscordID int64 `json:"account_discord_id"`
-	Permissions      int64 `json:"permissions"`
+	GuildDiscordID   string `json:"guild_discord_id"`
+	AccountDiscordID string `json:"account_discord_id"`
+	Permissions      int64  `json:"permissions"`
 }
 
 func (q *Queries) CreateOrUpdateUserGuildRel(ctx context.Context, arg CreateOrUpdateUserGuildRelParams) (UserGuild, error) {
@@ -37,9 +37,9 @@ RETURNING account_discord_id, guild_discord_id, permissions
 `
 
 type CreateUserGuildRelParams struct {
-	GuildDiscordID   int64 `json:"guild_discord_id"`
-	AccountDiscordID int64 `json:"account_discord_id"`
-	Permissions      int64 `json:"permissions"`
+	GuildDiscordID   string `json:"guild_discord_id"`
+	AccountDiscordID string `json:"account_discord_id"`
+	Permissions      int64  `json:"permissions"`
 }
 
 func (q *Queries) CreateUserGuildRel(ctx context.Context, arg CreateUserGuildRelParams) (UserGuild, error) {
@@ -57,8 +57,8 @@ WHERE account_discord_id = $1
 `
 
 type DeleteUserGuildRelParams struct {
-	AccountDiscordID int64 `json:"account_discord_id"`
-	GuildDiscordID   int64 `json:"guild_discord_id"`
+	AccountDiscordID string `json:"account_discord_id"`
+	GuildDiscordID   string `json:"guild_discord_id"`
 }
 
 func (q *Queries) DeleteUserGuildRel(ctx context.Context, arg DeleteUserGuildRelParams) error {
@@ -75,8 +75,8 @@ LIMIT 1
 `
 
 type GetUserGuildRelParams struct {
-	AccountDiscordID int64 `json:"account_discord_id"`
-	GuildDiscordID   int64 `json:"guild_discord_id"`
+	AccountDiscordID string `json:"account_discord_id"`
+	GuildDiscordID   string `json:"guild_discord_id"`
 }
 
 func (q *Queries) GetUserGuildRel(ctx context.Context, arg GetUserGuildRelParams) (UserGuild, error) {

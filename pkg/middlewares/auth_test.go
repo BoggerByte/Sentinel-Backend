@@ -3,7 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/util"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -23,7 +23,7 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "OK",
 			setupAuth: func(t *testing.T, r *http.Request, tokenMaker token.Maker) {
-				accessToken, _, err := tokenMaker.CreateToken(1234, time.Minute)
+				accessToken, _, err := tokenMaker.CreateToken("1234", time.Minute)
 				require.NoError(t, err)
 
 				authHeader := fmt.Sprintf("%s %s", AuthorizationTypeBearer, accessToken)
@@ -43,7 +43,7 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "UnsupportedAuthorizationType",
 			setupAuth: func(t *testing.T, r *http.Request, tokenMaker token.Maker) {
-				accessToken, _, err := tokenMaker.CreateToken(1234, time.Minute)
+				accessToken, _, err := tokenMaker.CreateToken("1234", time.Minute)
 				require.NoError(t, err)
 
 				authHeader := fmt.Sprintf("%s %s", "unsupported", accessToken)
@@ -56,7 +56,7 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "InvalidAuthorizationFormat",
 			setupAuth: func(t *testing.T, r *http.Request, tokenMaker token.Maker) {
-				accessToken, _, err := tokenMaker.CreateToken(1234, time.Minute)
+				accessToken, _, err := tokenMaker.CreateToken("1234", time.Minute)
 				require.NoError(t, err)
 
 				authHeader := fmt.Sprintf("%s %s", "", accessToken)
@@ -69,7 +69,7 @@ func TestAuthMiddleware(t *testing.T) {
 		{
 			name: "ExpiredToken",
 			setupAuth: func(t *testing.T, r *http.Request, tokenMaker token.Maker) {
-				accessToken, _, err := tokenMaker.CreateToken(1234, -time.Minute)
+				accessToken, _, err := tokenMaker.CreateToken("1234", -time.Minute)
 				require.NoError(t, err)
 
 				authHeader := fmt.Sprintf("%s %s", AuthorizationTypeBearer, accessToken)
@@ -85,7 +85,7 @@ func TestAuthMiddleware(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			router := gin.New()
 
-			tokenMaker, _ := token.NewPasetoMaker(util.RandomString(32))
+			tokenMaker, _ := token.NewPasetoMaker(utils.RandomString(32))
 			authMiddleware := NewAuthMiddleware(tokenMaker)
 			router.GET(
 				"/auth",

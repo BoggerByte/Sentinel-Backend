@@ -36,4 +36,4 @@ mock:
 server:
 	go run cmd/main.go
 
-.PHONY: postgres redis createdb createmdb dropdb migrateup migratedown sqlc server
+.PHONY: postgres redis createdb dropdb migrateup migratedown sqlc server

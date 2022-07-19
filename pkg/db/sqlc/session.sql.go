@@ -20,7 +20,7 @@ RETURNING id, discord_id, refresh_token, user_agent, client_ip, is_blocked, expi
 
 type CreateSessionParams struct {
 	ID           uuid.UUID `json:"id"`
-	DiscordID    int64     `json:"discord_id"`
+	DiscordID    string    `json:"discord_id"`
 	RefreshToken string    `json:"refresh_token"`
 	UserAgent    string    `json:"user_agent"`
 	ClientIp     string    `json:"client_ip"`

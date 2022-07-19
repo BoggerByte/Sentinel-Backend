@@ -79,7 +79,7 @@ const getUserGuilds = `-- name: GetUserGuilds :many
 SELECT coalesce(g.id, 0),
        ug.guild_discord_id AS discord_id,
        ug.permissions,
-       coalesce(g.owner_discord_id, 0),
+       coalesce(g.owner_discord_id, '0'),
        coalesce(g.icon, '#'),
        coalesce(g.name, '')
 FROM user_guild ug

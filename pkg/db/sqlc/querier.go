@@ -17,16 +17,16 @@ type Querier interface {
 	CreateOrUpdateUserGuildRel(ctx context.Context, arg CreateOrUpdateUserGuildRelParams) (UserGuild, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUserGuildRel(ctx context.Context, arg CreateUserGuildRelParams) (UserGuild, error)
-	DeleteGuild(ctx context.Context, discordID int64) error
-	DeleteGuildConfig(ctx context.Context, discordID int64) error
-	DeleteUser(ctx context.Context, discordID int64) error
+	DeleteGuild(ctx context.Context, discordID string) error
+	DeleteGuildConfig(ctx context.Context, discordID string) error
+	DeleteUser(ctx context.Context, discordID string) error
 	DeleteUserGuildRel(ctx context.Context, arg DeleteUserGuildRelParams) error
-	GetGuild(ctx context.Context, discordID int64) (Guild, error)
-	GetGuildConfig(ctx context.Context, discordID int64) (GuildConfig, error)
+	GetGuild(ctx context.Context, discordID string) (Guild, error)
+	GetGuildConfig(ctx context.Context, discordID string) (GuildConfig, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
-	GetUser(ctx context.Context, discordID int64) (User, error)
+	GetUser(ctx context.Context, discordID string) (User, error)
 	GetUserGuildRel(ctx context.Context, arg GetUserGuildRelParams) (UserGuild, error)
-	GetUserGuilds(ctx context.Context, accountDiscordID int64) ([]GetUserGuildsRow, error)
+	GetUserGuilds(ctx context.Context, accountDiscordID string) ([]GetUserGuildsRow, error)
 	TryCreateGuildConfig(ctx context.Context, arg TryCreateGuildConfigParams) (GuildConfig, error)
 	UpdateGuildConfig(ctx context.Context, arg UpdateGuildConfigParams) error
 }

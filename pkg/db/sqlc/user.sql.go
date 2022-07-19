@@ -25,7 +25,7 @@ RETURNING id, discord_id, username, discriminator, verified, email, avatar, bann
 `
 
 type CreateOrUpdateUserParams struct {
-	DiscordID     int64  `json:"discord_id"`
+	DiscordID     string `json:"discord_id"`
 	Username      string `json:"username"`
 	Discriminator string `json:"discriminator"`
 	Verified      bool   `json:"verified"`
@@ -70,7 +70,7 @@ FROM "user"
 WHERE discord_id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, discordID int64) error {
+func (q *Queries) DeleteUser(ctx context.Context, discordID string) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, discordID)
 	return err
 }
@@ -82,7 +82,7 @@ WHERE discord_id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, discordID int64) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, discordID string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, discordID)
 	var i User
 	err := row.Scan(

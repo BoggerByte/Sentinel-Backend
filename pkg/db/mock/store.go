@@ -127,7 +127,7 @@ func (mr *MockStoreMockRecorder) CreateUserGuildRel(arg0, arg1 interface{}) *gom
 }
 
 // DeleteGuild mocks base method.
-func (m *MockStore) DeleteGuild(arg0 context.Context, arg1 int64) error {
+func (m *MockStore) DeleteGuild(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteGuild", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -141,7 +141,7 @@ func (mr *MockStoreMockRecorder) DeleteGuild(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // DeleteGuildConfig mocks base method.
-func (m *MockStore) DeleteGuildConfig(arg0 context.Context, arg1 int64) error {
+func (m *MockStore) DeleteGuildConfig(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteGuildConfig", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -155,7 +155,7 @@ func (mr *MockStoreMockRecorder) DeleteGuildConfig(arg0, arg1 interface{}) *gomo
 }
 
 // DeleteUser mocks base method.
-func (m *MockStore) DeleteUser(arg0 context.Context, arg1 int64) error {
+func (m *MockStore) DeleteUser(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -197,7 +197,7 @@ func (mr *MockStoreMockRecorder) ExecTx(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // GetGuild mocks base method.
-func (m *MockStore) GetGuild(arg0 context.Context, arg1 int64) (db.Guild, error) {
+func (m *MockStore) GetGuild(arg0 context.Context, arg1 string) (db.Guild, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGuild", arg0, arg1)
 	ret0, _ := ret[0].(db.Guild)
@@ -212,7 +212,7 @@ func (mr *MockStoreMockRecorder) GetGuild(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // GetGuildConfig mocks base method.
-func (m *MockStore) GetGuildConfig(arg0 context.Context, arg1 int64) (db.GuildConfig, error) {
+func (m *MockStore) GetGuildConfig(arg0 context.Context, arg1 string) (db.GuildConfig, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGuildConfig", arg0, arg1)
 	ret0, _ := ret[0].(db.GuildConfig)
@@ -242,7 +242,7 @@ func (mr *MockStoreMockRecorder) GetSession(arg0, arg1 interface{}) *gomock.Call
 }
 
 // GetUser mocks base method.
-func (m *MockStore) GetUser(arg0 context.Context, arg1 int64) (db.User, error) {
+func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (db.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)
 	ret0, _ := ret[0].(db.User)
@@ -272,7 +272,7 @@ func (mr *MockStoreMockRecorder) GetUserGuildRel(arg0, arg1 interface{}) *gomock
 }
 
 // GetUserGuilds mocks base method.
-func (m *MockStore) GetUserGuilds(arg0 context.Context, arg1 int64) ([]db.GetUserGuildsRow, error) {
+func (m *MockStore) GetUserGuilds(arg0 context.Context, arg1 string) ([]db.GetUserGuildsRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserGuilds", arg0, arg1)
 	ret0, _ := ret[0].([]db.GetUserGuildsRow)

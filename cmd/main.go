@@ -56,7 +56,7 @@ func main() {
 	discordOauth2Service := services.NewDiscordOauth2Service(&oauth2.Config{
 		Endpoint:     discord.Endpoint,
 		Scopes:       []string{discord.ScopeIdentify, discord.ScopeEmail, discord.ScopeGuilds},
-		RedirectURL:  "http://localhost:3000/oauth2/discord_callback",
+		RedirectURL:  "http://localhost:5173/oauth2/discord_callback",
 		ClientID:     config.DiscordClientID,
 		ClientSecret: config.DiscordClientSecret,
 	})

@@ -21,10 +21,11 @@ type Querier interface {
 	DeleteGuildConfig(ctx context.Context, discordID string) error
 	DeleteUser(ctx context.Context, discordID string) error
 	DeleteUserGuildRel(ctx context.Context, arg DeleteUserGuildRelParams) error
-	GetGuild(ctx context.Context, discordID string) (Guild, error)
+	GetGuild(ctx context.Context, discordID string) (GetGuildRow, error)
 	GetGuildConfig(ctx context.Context, discordID string) (GuildConfig, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, discordID string) (User, error)
+	GetUserGuild(ctx context.Context, arg GetUserGuildParams) (GetUserGuildRow, error)
 	GetUserGuildRel(ctx context.Context, arg GetUserGuildRelParams) (UserGuild, error)
 	GetUserGuilds(ctx context.Context, accountDiscordID string) ([]GetUserGuildsRow, error)
 	TryCreateGuildConfig(ctx context.Context, arg TryCreateGuildConfigParams) (GuildConfig, error)

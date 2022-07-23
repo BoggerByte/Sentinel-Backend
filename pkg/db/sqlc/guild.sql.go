@@ -13,9 +13,9 @@ const createOrUpdateGuild = `-- name: CreateOrUpdateGuild :one
 INSERT INTO guild (discord_id, name, icon, owner_discord_id)
 VALUES ($1, $2, $3, $4)
 ON CONFLICT (discord_id) DO UPDATE
-    SET name=$2,
-        icon=$3,
-        owner_discord_id=$4
+    SET name             = $2,
+        icon             = $3,
+        owner_discord_id = $4
 RETURNING id, discord_id, owner_discord_id, name, icon
 `
 
@@ -56,34 +56,101 @@ func (q *Queries) DeleteGuild(ctx context.Context, discordID string) error {
 }
 
 const getGuild = `-- name: GetGuild :one
-SELECT id, discord_id, owner_discord_id, name, icon
-FROM guild
+SELECT g.id, g.discord_id, g.owner_discord_id, g.name, g.icon,
+       (gc.json::json -> 'permissions' ->> 'read')::bigint AS config_read,
+       (gc.json::json -> 'permissions' ->> 'edit')::bigint AS config_edit
+FROM guild g
+         INNER JOIN guild_config gc ON gc.id = g.id
 WHERE discord_id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetGuild(ctx context.Context, discordID string) (Guild, error) {
+type GetGuildRow struct {
+	ID             int64  `json:"id"`
+	DiscordID      string `json:"discord_id"`
+	OwnerDiscordID string `json:"owner_discord_id"`
+	Name           string `json:"name"`
+	Icon           string `json:"icon"`
+	ConfigRead     int64  `json:"config_read"`
+	ConfigEdit     int64  `json:"config_edit"`
+}
+
+func (q *Queries) GetGuild(ctx context.Context, discordID string) (GetGuildRow, error) {
 	row := q.db.QueryRowContext(ctx, getGuild, discordID)
-	var i Guild
+	var i GetGuildRow
 	err := row.Scan(
 		&i.ID,
 		&i.DiscordID,
 		&i.OwnerDiscordID,
 		&i.Name,
 		&i.Icon,
+		&i.ConfigRead,
+		&i.ConfigEdit,
+	)
+	return i, err
+}
+
+const getUserGuild = `-- name: GetUserGuild :one
+SELECT coalesce(g.id, 0),
+       ug.guild_discord_id                                 AS discord_id,
+       ug.permissions,
+       coalesce(g.owner_discord_id, '0'),
+       coalesce(g.icon, '#'),
+       coalesce(g.name, ''),
+       (gc.json::json -> 'permissions' ->> 'read')::bigint AS config_read,
+       (gc.json::json -> 'permissions' ->> 'edit')::bigint AS config_edit
+FROM user_guild ug
+         LEFT OUTER JOIN guild g ON g.discord_id = ug.guild_discord_id
+         INNER JOIN guild_config gc ON gc.id = g.id
+WHERE ug.account_discord_id = $1
+  AND ug.guild_discord_id   = $2
+LIMIT 1
+`
+
+type GetUserGuildParams struct {
+	AccountDiscordID string `json:"account_discord_id"`
+	GuildDiscordID   string `json:"guild_discord_id"`
+}
+
+type GetUserGuildRow struct {
+	ID             int64  `json:"id"`
+	DiscordID      string `json:"discord_id"`
+	Permissions    int64  `json:"permissions"`
+	OwnerDiscordID string `json:"owner_discord_id"`
+	Icon           string `json:"icon"`
+	Name           string `json:"name"`
+	ConfigRead     int64  `json:"config_read"`
+	ConfigEdit     int64  `json:"config_edit"`
+}
+
+func (q *Queries) GetUserGuild(ctx context.Context, arg GetUserGuildParams) (GetUserGuildRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserGuild, arg.AccountDiscordID, arg.GuildDiscordID)
+	var i GetUserGuildRow
+	err := row.Scan(
+		&i.ID,
+		&i.DiscordID,
+		&i.Permissions,
+		&i.OwnerDiscordID,
+		&i.Icon,
+		&i.Name,
+		&i.ConfigRead,
+		&i.ConfigEdit,
 	)
 	return i, err
 }
 
 const getUserGuilds = `-- name: GetUserGuilds :many
 SELECT coalesce(g.id, 0),
-       ug.guild_discord_id AS discord_id,
+       ug.guild_discord_id                                 AS discord_id,
        ug.permissions,
        coalesce(g.owner_discord_id, '0'),
        coalesce(g.icon, '#'),
-       coalesce(g.name, '')
+       coalesce(g.name, ''),
+       (gc.json::json -> 'permissions' ->> 'read')::bigint AS config_read,
+       (gc.json::json -> 'permissions' ->> 'edit')::bigint AS config_edit
 FROM user_guild ug
          LEFT OUTER JOIN guild g ON g.discord_id = ug.guild_discord_id
+         INNER JOIN guild_config gc ON gc.id = g.id
 WHERE ug.account_discord_id = $1
 `
 
@@ -94,6 +161,8 @@ type GetUserGuildsRow struct {
 	OwnerDiscordID string `json:"owner_discord_id"`
 	Icon           string `json:"icon"`
 	Name           string `json:"name"`
+	ConfigRead     int64  `json:"config_read"`
+	ConfigEdit     int64  `json:"config_edit"`
 }
 
 func (q *Queries) GetUserGuilds(ctx context.Context, accountDiscordID string) ([]GetUserGuildsRow, error) {
@@ -112,6 +181,8 @@ func (q *Queries) GetUserGuilds(ctx context.Context, accountDiscordID string) ([
 			&i.OwnerDiscordID,
 			&i.Icon,
 			&i.Name,
+			&i.ConfigRead,
+			&i.ConfigEdit,
 		); err != nil {
 			return nil, err
 		}

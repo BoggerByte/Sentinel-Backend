@@ -197,10 +197,10 @@ func (mr *MockStoreMockRecorder) ExecTx(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // GetGuild mocks base method.
-func (m *MockStore) GetGuild(arg0 context.Context, arg1 string) (db.Guild, error) {
+func (m *MockStore) GetGuild(arg0 context.Context, arg1 string) (db.GetGuildRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetGuild", arg0, arg1)
-	ret0, _ := ret[0].(db.Guild)
+	ret0, _ := ret[0].(db.GetGuildRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -254,6 +254,21 @@ func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (db.User, error) 
 func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+}
+
+// GetUserGuild mocks base method.
+func (m *MockStore) GetUserGuild(arg0 context.Context, arg1 db.GetUserGuildParams) (db.GetUserGuildRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserGuild", arg0, arg1)
+	ret0, _ := ret[0].(db.GetUserGuildRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserGuild indicates an expected call of GetUserGuild.
+func (mr *MockStoreMockRecorder) GetUserGuild(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGuild", reflect.TypeOf((*MockStore)(nil).GetUserGuild), arg0, arg1)
 }
 
 // GetUserGuildRel mocks base method.

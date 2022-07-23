@@ -12,16 +12,19 @@ type Auth interface {
 
 type Guild interface {
 	Get(c *gin.Context)
-	GetAll(c *gin.Context)
+	GetUserOne(c *gin.Context)
+	GetUserAll(c *gin.Context)
 }
 
 type GuildConfig interface {
 	Overwrite(c *gin.Context)
 	Get(c *gin.Context)
+	GetPreset(c *gin.Context)
 }
 
 type Oauth2 interface {
 	NewURL(c *gin.Context)
+	NewInviteBotURL(c *gin.Context)
 	DiscordCallback(c *gin.Context)
 }
 

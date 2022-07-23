@@ -8,14 +8,11 @@ import (
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/forms"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/middlewares"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/BoggerByte/Sentinel-backend.git/pub/objects"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
-
-func anyOfPermissions(p1 int64, p2 int64) bool {
-	return p1&p2 > 0
-}
 
 type GuildConfigPermissions struct {
 	store db.Store
@@ -69,7 +66,7 @@ func (p *GuildConfigPermissions) Overwrite() gin.HandlerFunc {
 			return
 		}
 
-		if !anyOfPermissions(userGuildRel.Permissions, guildConfigObj.Permissions.Edit) {
+		if !utils.AnyOfPermissions(userGuildRel.Permissions, guildConfigObj.Permissions.Edit) {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
 		}
@@ -120,7 +117,7 @@ func (p *GuildConfigPermissions) Get() gin.HandlerFunc {
 			return
 		}
 
-		if !anyOfPermissions(userGuildRel.Permissions, guildConfigObj.Permissions.Read) {
+		if !utils.AnyOfPermissions(userGuildRel.Permissions, guildConfigObj.Permissions.Read) {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			return
 		}

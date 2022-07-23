@@ -36,17 +36,20 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 	api := router.Group("/api/v1")
 	{
 		api.GET("/oauth2/new_url", controllers.Oauth2.NewURL)
+		api.GET("/oauth2/new_invite_bot_url", controllers.Oauth2.NewInviteBotURL)
 		api.GET("/oauth2/discord_callback", controllers.Oauth2.DiscordCallback)
 
 		api.POST("/auth/paseto/refresh", middlewares.Auth, controllers.Auth.RefreshToken)
 
 		api.GET("/users/me", middlewares.Auth, controllers.Account.Get)
-		api.GET("/users/me/guilds", middlewares.Auth, controllers.Guild.GetAll)
+		api.GET("/users/me/guilds", middlewares.Auth, controllers.Guild.GetUserAll)
+		api.GET("/users/me/guilds/:discord_id", middlewares.Auth, controllers.Guild.GetUserOne)
 
 		api.GET("/guilds/:discord_id", controllers.Guild.Get)
 
 		api.POST("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Overwrite(), controllers.GuildConfig.Overwrite)
 		api.GET("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Get(), controllers.GuildConfig.Get)
+		api.GET("/guilds/configs/presets/:preset", controllers.GuildConfig.GetPreset)
 	}
 
 	return &Server{router: router}

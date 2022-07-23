@@ -12,6 +12,7 @@ type GuildConfigData struct {
 type GuildConfig struct {
 	Permissions GuildConfigPermissions `json:"permissions"`
 	Data        GuildConfigData        `json:"data"`
+	Preset      string                 `json:"preset"`
 }
 
 var DefaultGuildConfig = GuildConfig{
@@ -22,4 +23,5 @@ var DefaultGuildConfig = GuildConfig{
 	Data: GuildConfigData{
 		UseConfig: false,
 	},
+	Preset: "default",
 }

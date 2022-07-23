@@ -196,7 +196,7 @@ func TestGuildController_GetAll(t *testing.T) {
 			authMiddleware := middlewares.NewAuthMiddleware(tokenMaker)
 			guildController := NewGuildController(store)
 			router := gin.New()
-			router.GET("/api/v1/accounts/me/guilds", authMiddleware, guildController.GetAll)
+			router.GET("/api/v1/accounts/me/guilds", authMiddleware, guildController.GetUserAll)
 
 			url := "/api/v1/accounts/me/guilds"
 			req, err := http.NewRequest(http.MethodGet, url, nil)

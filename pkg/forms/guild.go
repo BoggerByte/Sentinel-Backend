@@ -4,6 +4,6 @@ type GetGuildURI struct {
 	DiscordID string `uri:"discord_id" binding:"required"`
 }
 
-type GetAllAccountGuildsURI struct {
+type GetUserGuildURI struct {
 	DiscordID string `uri:"discord_id" binding:"required"`
 }

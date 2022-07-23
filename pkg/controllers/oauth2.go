@@ -58,6 +58,12 @@ func (ctrl *Oauth2Controller) NewURL(c *gin.Context) {
 	})
 }
 
+func (ctrl *Oauth2Controller) NewInviteBotURL(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"url": ctrl.discordOauth2Service.NewInviteBotURL(),
+	})
+}
+
 func (ctrl *Oauth2Controller) DiscordCallback(c *gin.Context) {
 	var form forms.Oauth2RedirectForm
 	if err := c.ShouldBindQuery(&form); err != nil {
@@ -113,28 +119,30 @@ func (ctrl *Oauth2Controller) DiscordCallback(c *gin.Context) {
 		}
 
 		for _, dGuild := range dGuilds {
+			var ownerDiscordID = ""
 			if dGuild.IsOwner {
-				_, err = q.CreateOrUpdateGuild(c, db.CreateOrUpdateGuildParams{
-					DiscordID:      dGuild.ID,
-					Name:           dGuild.Name,
-					Icon:           dGuild.Icon,
-					OwnerDiscordID: dUser.ID,
-				})
-				if err != nil {
-					return err
-				}
-
-				_, err := q.TryCreateGuildConfig(c, db.TryCreateGuildConfigParams{
-					DiscordID: dGuild.ID,
-					Json:      defaultGuildConfigJSON,
-				})
-				if err != nil && !errors.Is(err, sql.ErrNoRows) {
-					return err
-				}
-
+				ownerDiscordID = dUser.ID
 				dGuild.Permissions = 0xfffffffffff
 			}
-			_, err := q.CreateOrUpdateUserGuildRel(c, db.CreateOrUpdateUserGuildRelParams{
+			_, err = q.CreateOrUpdateGuild(c, db.CreateOrUpdateGuildParams{
+				DiscordID:      dGuild.ID,
+				Name:           dGuild.Name,
+				Icon:           dGuild.Icon,
+				OwnerDiscordID: ownerDiscordID,
+			})
+			if err != nil {
+				return err
+			}
+
+			_, err = q.TryCreateGuildConfig(c, db.TryCreateGuildConfigParams{
+				DiscordID: dGuild.ID,
+				Json:      defaultGuildConfigJSON,
+			})
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				return err
+			}
+
+			_, err = q.CreateOrUpdateUserGuildRel(c, db.CreateOrUpdateUserGuildRelParams{
 				AccountDiscordID: dUser.ID,
 				GuildDiscordID:   dGuild.ID,
 				Permissions:      dGuild.Permissions,

@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"github.com/ravener/discord-oauth2"
 	"golang.org/x/oauth2"
+	"net/url"
 )
 
 type DiscordOauth2Service struct {
@@ -16,6 +18,14 @@ func NewDiscordOauth2Service(config *oauth2.Config) *DiscordOauth2Service {
 
 func (s *DiscordOauth2Service) NewURL(state string) string {
 	return s.config.AuthCodeURL(state)
+}
+
+func (s *DiscordOauth2Service) NewInviteBotURL() string {
+	v := url.Values{}
+	v.Set("client_id", s.config.ClientID)
+	v.Set("permissions", "8") // administrator
+	v.Set("scope", discord.ScopeBot)
+	return s.config.Endpoint.AuthURL + "?" + v.Encode()
 }
 
 func (s *DiscordOauth2Service) Exchange(code string) (*oauth2.Token, error) {

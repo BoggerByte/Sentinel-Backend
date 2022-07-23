@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	db "github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/forms"
+	"github.com/BoggerByte/Sentinel-backend.git/pub/objects"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -16,6 +17,22 @@ func NewGuildConfigController(store db.Store) *GuildConfigController {
 	return &GuildConfigController{
 		store: store,
 	}
+}
+
+func (ctrl *GuildConfigController) GetPreset(c *gin.Context) {
+	var uri forms.GetGuildConfigPresetURI
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var guildConfig objects.GuildConfig
+	switch uri.Preset {
+	case "default":
+		guildConfig = objects.DefaultGuildConfig
+	}
+
+	c.JSON(http.StatusOK, guildConfig)
 }
 
 func (ctrl *GuildConfigController) Overwrite(c *gin.Context) {

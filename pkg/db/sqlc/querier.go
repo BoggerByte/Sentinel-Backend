@@ -6,8 +6,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -15,7 +13,6 @@ type Querier interface {
 	CreateOrUpdateGuildConfig(ctx context.Context, arg CreateOrUpdateGuildConfigParams) (GuildConfig, error)
 	CreateOrUpdateUser(ctx context.Context, arg CreateOrUpdateUserParams) (User, error)
 	CreateOrUpdateUserGuildRel(ctx context.Context, arg CreateOrUpdateUserGuildRelParams) (UserGuild, error)
-	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUserGuildRel(ctx context.Context, arg CreateUserGuildRelParams) (UserGuild, error)
 	DeleteGuild(ctx context.Context, discordID string) error
 	DeleteGuildConfig(ctx context.Context, discordID string) error
@@ -23,7 +20,6 @@ type Querier interface {
 	DeleteUserGuildRel(ctx context.Context, arg DeleteUserGuildRelParams) error
 	GetGuild(ctx context.Context, discordID string) (GetGuildRow, error)
 	GetGuildConfig(ctx context.Context, discordID string) (GuildConfig, error)
-	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, discordID string) (User, error)
 	GetUserGuild(ctx context.Context, arg GetUserGuildParams) (GetUserGuildRow, error)
 	GetUserGuildRel(ctx context.Context, arg GetUserGuildRelParams) (UserGuild, error)

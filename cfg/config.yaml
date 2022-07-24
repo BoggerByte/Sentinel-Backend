@@ -2,12 +2,12 @@ address: "localhost:8080"
 
 db-driver: "postgres"
 db-protocol: "postgresql"
-db-host: "localhost"
+db-host: "sentinel-db"
 db-port: "5432"
 db-name: "sentinel_db"
 db-ssl-mode: "disable"
 
-redis-host: "localhost"
+redis-host: "sentinel-redis"
 redis-port: "6379"
 
 token-access-duration: "15m"

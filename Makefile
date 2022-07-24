@@ -4,6 +4,7 @@ postgres:
 		-e POSTGRES_PASSWORD='qwerty' \
 		-p 5432:5432 \
 		--rm \
+		--network=sentinel-network \
 		--name=sentinel-db \
 		postgres:14.3
 
@@ -11,6 +12,7 @@ redis:
 	docker run -d \
 		-p 6379:6379 \
 		--rm \
+		--network=sentinel-network \
 		--name=sentinel-redis \
 		redis /bin/sh -c 'redis-server --appendonly yes --requirepass qwerty'
 

@@ -14,6 +14,7 @@ type Server struct {
 
 func NewServer(controllers controllers.Controllers, middlewares middlewares.Middlewares) *Server {
 	router := gin.Default()
+	_ = router.SetTrustedProxies(nil)
 
 	router.LoadHTMLGlob("./pub/html/*")
 	router.Static("/pub", "./pub")

@@ -6,30 +6,29 @@ import (
 )
 
 type Config struct {
-	Address                 string        `mapstructure:"address"`
-	DBDriver                string        `mapstructure:"db-driver"`
-	DBProtocol              string        `mapstructure:"db-protocol"`
-	DBHost                  string        `mapstructure:"db-host"`
-	DBPort                  string        `mapstructure:"db-port"`
+	Address                 string        `mapstructure:"ADDRESS"`
+	DBDriver                string        `mapstructure:"DB_DRIVER"`
+	DBProtocol              string        `mapstructure:"DB_PROTOCOL"`
+	DBHost                  string        `mapstructure:"DB_HOST"`
+	DBPort                  string        `mapstructure:"DB_PORT"`
 	DBUsername              string        `mapstructure:"DB_USERNAME"`
 	DBPassword              string        `mapstructure:"DB_PASSWORD"`
-	DBName                  string        `mapstructure:"db-name"`
-	DBSSLMode               string        `mapstructure:"db-ssl-mode"`
-	RedisHost               string        `mapstructure:"redis-host"`
-	RedisPort               string        `mapstructure:"redis-port"`
+	DBName                  string        `mapstructure:"DB_NAME"`
+	DBSSLMode               string        `mapstructure:"DB_SSL_MODE"`
+	RedisHost               string        `mapstructure:"REDIS_HOST"`
+	RedisPort               string        `mapstructure:"REDIS_PORT"`
 	RedisPassword           string        `mapstructure:"REDIS_PASSWORD"`
 	PasetoSymmetricKey      string        `mapstructure:"PASETO_SYMMETRIC_KEY"`
-	AccessTokenDuration     time.Duration `mapstructure:"token-access-duration"`
-	RefreshTokenDuration    time.Duration `mapstructure:"token-refresh-duration"`
-	Oauth2FlowStateDuration time.Duration `mapstructure:"oauth2flow-state-duration"`
+	AccessTokenDuration     time.Duration `mapstructure:"TOKEN_ACCESS_DURATION"`
+	RefreshTokenDuration    time.Duration `mapstructure:"TOKEN_REFRESH_DURATION"`
+	Oauth2FlowStateDuration time.Duration `mapstructure:"OAUTH2_FLOW_STATE_DURATION"`
 	DiscordClientID         string        `mapstructure:"DISCORD_CLIENT_ID"`
 	DiscordClientSecret     string        `mapstructure:"DISCORD_CLIENT_SECRET"`
 }
 
 func LoadConfig() (Config, error) {
-	viper.AddConfigPath("./cfg/")
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	viper.AddConfigPath("./")
+	viper.SetConfigFile(".env")
 	if err := viper.ReadInConfig(); err != nil {
 		return Config{}, err
 	}

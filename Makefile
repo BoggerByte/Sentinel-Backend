@@ -2,9 +2,9 @@ postgres:
 	docker run -d \
 		-e POSTGRES_USER='root' \
 		-e POSTGRES_PASSWORD='qwerty' \
+		-e POSTGRES_DB='sentinel_db' \
 		-p 5432:5432 \
 		--rm \
-		--network=sentinel-network \
 		--name=sentinel-db \
 		postgres:14.3
 
@@ -12,12 +12,8 @@ redis:
 	docker run -d \
 		-p 6379:6379 \
 		--rm \
-		--network=sentinel-network \
 		--name=sentinel-redis \
 		redis /bin/sh -c 'redis-server --appendonly yes --requirepass qwerty'
-
-createdb:
-	docker exec -it sentinel-db createdb --username=root --owner=root sentinel_db
 
 dropdb:
 	docker exec -it sentinel-db dropdb --username=root sentinel_db
@@ -38,4 +34,4 @@ mock:
 server:
 	go run cmd/main.go
 
-.PHONY: postgres redis createdb dropdb migrateup migratedown sqlc server
+.PHONY: postgres redis dropdb migrateup migratedown sqlc server

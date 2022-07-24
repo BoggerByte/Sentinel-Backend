@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"bytes"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	mockdb "github.com/BoggerByte/Sentinel-backend.git/pkg/db/mock"
 	db "github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
@@ -14,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,106 +25,6 @@ func generateRandomGuild() db.Guild {
 		Name:           gofakeit.AppName(),
 		Icon:           gofakeit.ImageURL(400, 400),
 		OwnerDiscordID: utils.RandomSnowflakeID().String(),
-	}
-}
-
-func requireBodyMatchGuilds(t *testing.T, body *bytes.Buffer, guilds []db.Guild) {
-	data, err := ioutil.ReadAll(body)
-
-	require.NoError(t, err)
-
-	var gotGuilds []db.Guild
-	err = json.Unmarshal(data, &gotGuilds)
-
-	require.NoError(t, err)
-	require.Equal(t, guilds, gotGuilds)
-}
-
-func requireBodyMatchGuild(t *testing.T, body *bytes.Buffer, guild db.Guild) {
-	data, err := ioutil.ReadAll(body)
-
-	require.NoError(t, err)
-
-	var gotGuild db.Guild
-	err = json.Unmarshal(data, &gotGuild)
-
-	require.NoError(t, err)
-	require.Equal(t, guild, gotGuild)
-}
-
-func TestGuildController_Get(t *testing.T) {
-	gin.SetMode(gin.ReleaseMode)
-
-	guild := generateRandomGuild()
-
-	testCases := []struct {
-		name           string
-		guildDiscordID string
-		buildStubs     func(store *mockdb.MockStore)
-		checkResponse  func(t *testing.T, w *httptest.ResponseRecorder)
-	}{
-		{
-			name:           "OK",
-			guildDiscordID: guild.DiscordID,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					GetGuild(gomock.Any(), gomock.Eq(guild.DiscordID)).
-					Times(1).
-					Return(guild, nil)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, w.Code)
-				requireBodyMatchGuild(t, w.Body, guild)
-			},
-		},
-		{
-			name:           "NotFound",
-			guildDiscordID: guild.DiscordID,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					GetGuild(gomock.Any(), gomock.Eq(guild.DiscordID)).
-					Times(1).
-					Return(db.Guild{}, sql.ErrNoRows)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusNotFound, w.Code)
-			},
-		},
-		{
-			name:           "InternalServerError/DBGetGuild",
-			guildDiscordID: guild.DiscordID,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					GetGuild(gomock.Any(), gomock.Eq(guild.DiscordID)).
-					Times(1).
-					Return(db.Guild{}, sql.ErrConnDone)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, w.Code)
-			},
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			store := mockdb.NewMockStore(ctrl)
-			tc.buildStubs(store)
-
-			guildController := NewGuildController(store)
-			router := gin.New()
-			router.GET("/api/v1/guilds/:discord_id", guildController.Get)
-
-			url := fmt.Sprintf("/api/v1/guilds/%s", tc.guildDiscordID)
-			req, err := http.NewRequest(http.MethodGet, url, nil)
-			require.NoError(t, err)
-
-			w := httptest.NewRecorder()
-			router.ServeHTTP(w, req)
-
-			tc.checkResponse(t, w)
-		})
 	}
 }
 
@@ -148,6 +45,8 @@ func TestGuildController_GetAll(t *testing.T) {
 		Icon:           guild.Icon,
 		Name:           guild.Name,
 		Permissions:    accountGuildRel.Permissions,
+		ConfigRead:     0xfffffffff,
+		ConfigEdit:     40,
 	}
 
 	testCases := []struct {
@@ -167,7 +66,6 @@ func TestGuildController_GetAll(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, w.Code)
-				requireBodyMatchGuilds(t, w.Body, []db.Guild{guild})
 			},
 		},
 		{
@@ -177,7 +75,7 @@ func TestGuildController_GetAll(t *testing.T) {
 				store.EXPECT().
 					GetUserGuilds(gomock.Any(), gomock.Eq(account.DiscordID)).
 					Times(1).
-					Return([]db.GetUserGuildsRow{guildRow}, sql.ErrConnDone)
+					Return([]db.GetUserGuildsRow{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, w.Code)

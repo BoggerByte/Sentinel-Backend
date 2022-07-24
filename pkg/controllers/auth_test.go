@@ -3,8 +3,8 @@ package controllers
 import (
 	"database/sql"
 	"fmt"
-	mockdb "github.com/BoggerByte/Sentinel-backend.git/pkg/db/mock"
-	db "github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
+	memdb "github.com/BoggerByte/Sentinel-backend.git/pkg/db/memory"
+	mockmemdb "github.com/BoggerByte/Sentinel-backend.git/pkg/db/memory_mock"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/middlewares"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
@@ -18,16 +18,14 @@ import (
 	"time"
 )
 
-func generateRandomSession(payload *token.Payload) db.Session {
-	return db.Session{
+func generateRandomSession(payload *token.Payload) memdb.Session {
+	return memdb.Session{
 		ID:           payload.ID,
 		DiscordID:    payload.UserDiscordID,
 		RefreshToken: "",
 		UserAgent:    gofakeit.UserAgent(),
 		ClientIp:     gofakeit.IPv4Address(),
 		IsBlocked:    false,
-		ExpiresAt:    payload.ExpiredAt,
-		CreatedAt:    gofakeit.Date(),
 	}
 }
 
@@ -46,18 +44,18 @@ func TestAuthController_RefreshToken(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		buildStubs    func(store *mockdb.MockStore)
+		buildStubs    func(store *mockmemdb.MockStore)
 		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockmemdb.MockStore) {
 				store.EXPECT().
 					GetSession(gomock.Any(), gomock.Eq(session.ID)).
 					Times(1).
 					Return(session, nil)
 				store.EXPECT().
-					CreateSession(gomock.Any(), gomock.Any()).
+					SetSession(gomock.Any(), gomock.Any(), gomock.Eq(config.RefreshTokenDuration)).
 					Times(1).
 					Return(session, nil)
 			},
@@ -67,11 +65,11 @@ func TestAuthController_RefreshToken(t *testing.T) {
 		},
 		{
 			name: "SessionNotFound",
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockmemdb.MockStore) {
 				store.EXPECT().
 					GetSession(gomock.Any(), gomock.Eq(session.ID)).
 					Times(1).
-					Return(db.Session{}, sql.ErrNoRows)
+					Return(memdb.Session{}, sql.ErrNoRows)
 			},
 			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, w.Code)
@@ -79,11 +77,11 @@ func TestAuthController_RefreshToken(t *testing.T) {
 		},
 		{
 			name: "Unauthorized/SessionBlocked",
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockmemdb.MockStore) {
 				store.EXPECT().
 					GetSession(gomock.Any(), gomock.Eq(session.ID)).
 					Times(1).
-					Return(db.Session{
+					Return(memdb.Session{
 						IsBlocked: true,
 					}, nil)
 			},
@@ -93,11 +91,11 @@ func TestAuthController_RefreshToken(t *testing.T) {
 		},
 		{
 			name: "Unauthorized/DiscordIDMismatch",
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockmemdb.MockStore) {
 				store.EXPECT().
 					GetSession(gomock.Any(), gomock.Eq(session.ID)).
 					Times(1).
-					Return(db.Session{
+					Return(memdb.Session{
 						IsBlocked: false,
 						DiscordID: "",
 					}, nil)
@@ -108,11 +106,11 @@ func TestAuthController_RefreshToken(t *testing.T) {
 		},
 		{
 			name: "InternalServerError/DBGetSession",
-			buildStubs: func(store *mockdb.MockStore) {
+			buildStubs: func(store *mockmemdb.MockStore) {
 				store.EXPECT().
 					GetSession(gomock.Any(), gomock.Eq(session.ID)).
 					Times(1).
-					Return(db.Session{}, sql.ErrConnDone)
+					Return(memdb.Session{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, w.Code)
@@ -125,12 +123,12 @@ func TestAuthController_RefreshToken(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			store := mockdb.NewMockStore(ctrl)
-			tc.buildStubs(store)
+			memStore := mockmemdb.NewMockStore(ctrl)
+			tc.buildStubs(memStore)
 
 			router := gin.New()
 			authMiddleware := middlewares.NewAuthMiddleware(tokenMaker)
-			authController := NewAuthController(store, nil, config, tokenMaker)
+			authController := NewAuthController(nil, memStore, config, tokenMaker)
 			router.GET("/refresh", authMiddleware, authController.RefreshToken)
 
 			req, err := http.NewRequest(http.MethodGet, "/refresh", nil)

@@ -30,6 +30,7 @@ func TestGuildConfigController_Overwrite(t *testing.T) {
 		Data: objects.GuildConfigData{
 			UseConfig: false,
 		},
+		Preset: "default",
 	}
 	guildConfigJSON, err := json.Marshal(guildConfigObj)
 	require.NoError(t, err)
@@ -132,6 +133,7 @@ func TestGuildConfigController_Get(t *testing.T) {
 		Data: objects.GuildConfigData{
 			UseConfig: false,
 		},
+		Preset: "default",
 	}
 	guildConfigJSON, err := json.Marshal(guildConfigObj)
 	require.NoError(t, err)

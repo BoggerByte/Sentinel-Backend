@@ -169,15 +169,14 @@ func (ctrl *Oauth2Controller) DiscordCallback(c *gin.Context) {
 		return
 	}
 
-	session, err := ctrl.store.CreateSession(c, db.CreateSessionParams{
+	session, err := ctrl.memStore.SetSession(c, memdb.Session{
 		ID:           refreshPayload.ID,
 		DiscordID:    refreshPayload.UserDiscordID,
 		RefreshToken: refreshToken,
 		UserAgent:    c.Request.UserAgent(),
 		ClientIp:     c.ClientIP(),
 		IsBlocked:    false,
-		ExpiresAt:    refreshPayload.ExpiredAt,
-	})
+	}, ctrl.config.RefreshTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

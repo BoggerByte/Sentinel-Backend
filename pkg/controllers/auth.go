@@ -37,7 +37,7 @@ func NewAuthController(
 func (ctrl *AuthController) RefreshToken(c *gin.Context) {
 	refreshPayload := c.MustGet(middlewares.AuthorizationPayloadKey).(*token.Payload)
 
-	session, err := ctrl.store.GetSession(c, refreshPayload.ID)
+	session, err := ctrl.memStore.GetSession(c, refreshPayload.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusNotFound, errorResponse(err))
@@ -70,15 +70,14 @@ func (ctrl *AuthController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	newSession, err := ctrl.store.CreateSession(c, db.CreateSessionParams{
+	newSession, err := ctrl.memStore.SetSession(c, memdb.Session{
 		ID:           newRefreshPayload.ID,
 		DiscordID:    newRefreshPayload.UserDiscordID,
 		RefreshToken: newRefreshToken,
 		UserAgent:    c.Request.UserAgent(),
 		ClientIp:     c.ClientIP(),
 		IsBlocked:    false,
-		ExpiresAt:    refreshPayload.ExpiredAt,
-	})
+	}, ctrl.config.RefreshTokenDuration)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

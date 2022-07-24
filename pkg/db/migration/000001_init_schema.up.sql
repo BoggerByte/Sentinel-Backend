@@ -38,18 +38,6 @@ CREATE TABLE IF NOT EXISTS "user_guild"
     CONSTRAINT "account_guild_pk" PRIMARY KEY ("guild_discord_id", "account_discord_id")
 );
 
-CREATE TABLE IF NOT EXISTS "session"
-(
-    "id"            uuid PRIMARY KEY,
-    "discord_id"    varchar(64) NOT NULL,
-    "refresh_token" varchar     NOT NULL,
-    "user_agent"    varchar     NOT NULL,
-    "client_ip"     varchar     NOT NULL,
-    "is_blocked"    boolean     NOT NULL DEFAULT false,
-    "expires_at"    timestamptz NOT NULL,
-    "created_at"    timestamptz NOT NULL DEFAULT now()
-);
-
 CREATE INDEX ON "user" ("discord_id");
 
 CREATE INDEX ON "guild" ("discord_id");

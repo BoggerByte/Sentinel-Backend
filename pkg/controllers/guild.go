@@ -30,7 +30,7 @@ func NewGuildController(store db.Store) *GuildController {
 	return &GuildController{store: store}
 }
 
-func (ctrl *GuildController) Get(c *gin.Context) {
+func (ctrl *GuildController) GetGuild(c *gin.Context) {
 	var uri forms.GetGuildURI
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
@@ -50,7 +50,7 @@ func (ctrl *GuildController) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, guild)
 }
 
-func (ctrl *GuildController) GetUserOne(c *gin.Context) {
+func (ctrl *GuildController) GetUserGuild(c *gin.Context) {
 	var uri forms.GetUserGuildURI
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
@@ -83,7 +83,7 @@ func (ctrl *GuildController) GetUserOne(c *gin.Context) {
 	})
 }
 
-func (ctrl *GuildController) GetUserAll(c *gin.Context) {
+func (ctrl *GuildController) GetUserGuilds(c *gin.Context) {
 	payload := c.MustGet(middlewares.AuthorizationPayloadKey).(*token.Payload)
 
 	guilds, err := ctrl.store.GetUserGuilds(c, payload.UserDiscordID)
@@ -106,4 +106,48 @@ func (ctrl *GuildController) GetUserAll(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, rGuilds)
+}
+
+func (ctrl *GuildController) CreateOrUpdateGuilds(c *gin.Context) {
+	var json forms.CreateOrUpdateGuildsJSON
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	err := ctrl.store.ExecTx(c, func(q *db.Queries) error {
+		for _, guild := range json.Guilds {
+			if _, err := q.CreateOrUpdateGuild(c, guild); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (ctrl *GuildController) CreateOrUpdateGuild(c *gin.Context) {
+	var json forms.CreateOrUpdateGuildJSON
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var _, err = ctrl.store.CreateOrUpdateGuild(c, db.CreateOrUpdateGuildParams{
+		DiscordID:      json.DiscordID,
+		Name:           json.Name,
+		Icon:           json.Icon,
+		OwnerDiscordID: json.OwnerDiscordID,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }

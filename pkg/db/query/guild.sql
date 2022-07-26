@@ -16,11 +16,6 @@ FROM guild g
 WHERE discord_id = $1
 LIMIT 1;
 
--- name: DeleteGuild :exec
-DELETE
-FROM guild
-WHERE discord_id = $1;
-
 -- name: GetUserGuild :one
 SELECT coalesce(g.id, 0),
        ug.guild_discord_id                                 AS discord_id,

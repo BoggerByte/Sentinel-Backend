@@ -46,8 +46,6 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 		api.GET("/users/me/guilds", middlewares.Auth, controllers.GetUserGuilds)
 		api.GET("/users/me/guilds/:discord_id", middlewares.Auth, controllers.GetUserGuild)
 
-		api.GET("/guilds/:discord_id", controllers.GetGuild)
-
 		api.GET("/guilds/configs/presets/:preset", controllers.GetGuildConfigPreset)
 		api.GET("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Get(), controllers.GetGuildConfig)
 		api.POST("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Overwrite(), controllers.OverwriteGuildConfig)
@@ -57,7 +55,6 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 		Use(middlewares.DiscordBotAuth)
 	{
 		discordBotApi.POST("/guilds", controllers.CreateOrUpdateGuilds)
-		discordBotApi.POST("/guild", controllers.Guild.CreateOrUpdateGuild)
 
 		discordBotApi.GET("/guilds/configs", controllers.GetGuildsConfigs)
 		discordBotApi.GET("/guilds/configs/presets/:preset", controllers.GetGuildConfigPreset)

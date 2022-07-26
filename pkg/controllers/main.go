@@ -11,11 +11,9 @@ type Auth interface {
 }
 
 type Guild interface {
-	GetGuild(c *gin.Context)
 	GetUserGuild(c *gin.Context)
 	GetUserGuilds(c *gin.Context)
 	CreateOrUpdateGuilds(c *gin.Context)
-	CreateOrUpdateGuild(c *gin.Context)
 }
 
 type GuildConfig interface {

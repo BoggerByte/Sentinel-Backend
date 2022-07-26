@@ -64,17 +64,6 @@ func (q *Queries) CreateOrUpdateUser(ctx context.Context, arg CreateOrUpdateUser
 	return i, err
 }
 
-const deleteUser = `-- name: DeleteUser :exec
-DELETE
-FROM "user"
-WHERE discord_id = $1
-`
-
-func (q *Queries) DeleteUser(ctx context.Context, discordID string) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, discordID)
-	return err
-}
-
 const getUser = `-- name: GetUser :one
 SELECT id, discord_id, username, discriminator, verified, email, avatar, banner, accent_color, created_at
 FROM "user"

@@ -49,23 +49,6 @@ func (q *Queries) CreateUserGuildRel(ctx context.Context, arg CreateUserGuildRel
 	return i, err
 }
 
-const deleteUserGuildRel = `-- name: DeleteUserGuildRel :exec
-DELETE
-FROM user_guild
-WHERE account_discord_id = $1
-  AND guild_discord_id = $2
-`
-
-type DeleteUserGuildRelParams struct {
-	AccountDiscordID string `json:"account_discord_id"`
-	GuildDiscordID   string `json:"guild_discord_id"`
-}
-
-func (q *Queries) DeleteUserGuildRel(ctx context.Context, arg DeleteUserGuildRelParams) error {
-	_, err := q.db.ExecContext(ctx, deleteUserGuildRel, arg.AccountDiscordID, arg.GuildDiscordID)
-	return err
-}
-
 const getUserGuildRel = `-- name: GetUserGuildRel :one
 SELECT account_discord_id, guild_discord_id, permissions
 FROM user_guild

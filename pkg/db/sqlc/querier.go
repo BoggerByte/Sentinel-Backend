@@ -14,12 +14,9 @@ type Querier interface {
 	CreateOrUpdateUser(ctx context.Context, arg CreateOrUpdateUserParams) (User, error)
 	CreateOrUpdateUserGuildRel(ctx context.Context, arg CreateOrUpdateUserGuildRelParams) (UserGuild, error)
 	CreateUserGuildRel(ctx context.Context, arg CreateUserGuildRelParams) (UserGuild, error)
-	DeleteGuild(ctx context.Context, discordID string) error
-	DeleteGuildConfig(ctx context.Context, discordID string) error
-	DeleteUser(ctx context.Context, discordID string) error
-	DeleteUserGuildRel(ctx context.Context, arg DeleteUserGuildRelParams) error
 	GetGuild(ctx context.Context, discordID string) (GetGuildRow, error)
 	GetGuildConfig(ctx context.Context, discordID string) (GuildConfig, error)
+	GetGuildsConfigs(ctx context.Context) ([]GuildConfig, error)
 	GetUser(ctx context.Context, discordID string) (User, error)
 	GetUserGuild(ctx context.Context, arg GetUserGuildParams) (GetUserGuildRow, error)
 	GetUserGuildRel(ctx context.Context, arg GetUserGuildRelParams) (UserGuild, error)

@@ -32,22 +32,10 @@ func (q *Queries) CreateOrUpdateGuildConfig(ctx context.Context, arg CreateOrUpd
 	return i, err
 }
 
-const deleteGuildConfig = `-- name: DeleteGuildConfig :exec
-DELETE
-FROM guild_config c USING guild g
-WHERE c.id = g.id
-  AND g.discord_id = $1
-`
-
-func (q *Queries) DeleteGuildConfig(ctx context.Context, discordID string) error {
-	_, err := q.db.ExecContext(ctx, deleteGuildConfig, discordID)
-	return err
-}
-
 const getGuildConfig = `-- name: GetGuildConfig :one
 SELECT c.id, c.json, c.created_at
 FROM guild g
-         JOIN guild_config c on g.id = c.id
+         JOIN guild_config c ON g.id = c.id
 WHERE g.discord_id = $1
 `
 
@@ -56,6 +44,35 @@ func (q *Queries) GetGuildConfig(ctx context.Context, discordID string) (GuildCo
 	var i GuildConfig
 	err := row.Scan(&i.ID, &i.Json, &i.CreatedAt)
 	return i, err
+}
+
+const getGuildsConfigs = `-- name: GetGuildsConfigs :many
+SELECT c.id, c.json, c.created_at
+FROM guild g
+         JOIN guild_config c ON g.id = c.id
+`
+
+func (q *Queries) GetGuildsConfigs(ctx context.Context) ([]GuildConfig, error) {
+	rows, err := q.db.QueryContext(ctx, getGuildsConfigs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GuildConfig
+	for rows.Next() {
+		var i GuildConfig
+		if err := rows.Scan(&i.ID, &i.Json, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const tryCreateGuildConfig = `-- name: TryCreateGuildConfig :one

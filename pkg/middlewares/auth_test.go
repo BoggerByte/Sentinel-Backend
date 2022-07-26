@@ -87,17 +87,74 @@ func TestAuthMiddleware(t *testing.T) {
 
 			tokenMaker, _ := token.NewPasetoMaker(utils.RandomString(32))
 			authMiddleware := NewAuthMiddleware(tokenMaker)
-			router.GET(
-				"/auth",
-				authMiddleware,
-				func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{})
-				})
+			router.GET("/auth", authMiddleware, func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{})
+			})
 
 			req, err := http.NewRequest(http.MethodGet, "/auth", nil)
 			require.NoError(t, err)
 
 			tc.setupAuth(t, req, tokenMaker)
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			tc.checkResponse(t, w)
+		})
+	}
+}
+
+func TestDiscordBotAuthMiddleware(t *testing.T) {
+	gin.SetMode(gin.ReleaseMode)
+
+	config := utils.Config{
+		DiscordBotSentinelAPISecret: "secret",
+	}
+
+	testCases := []struct {
+		name          string
+		setupAuth     func(t *testing.T, r *http.Request)
+		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			setupAuth: func(t *testing.T, r *http.Request) {
+				sentinelAPISecret := config.DiscordBotSentinelAPISecret
+				r.Header.Set(AuthorizationHeaderKey, sentinelAPISecret)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, w.Code)
+			},
+		},
+		{
+			name:      "NoAuthorization",
+			setupAuth: func(t *testing.T, r *http.Request) {},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, w.Code)
+			},
+		},
+		{
+			name: "InvalidCredentials",
+			setupAuth: func(t *testing.T, r *http.Request) {
+				r.Header.Set(AuthorizationHeaderKey, "invalid")
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, w.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			router := gin.New()
+
+			authMiddleware := NewDiscordBotAuthMiddleware(config)
+			router.GET("/auth", authMiddleware, func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{})
+			})
+
+			req, err := http.NewRequest(http.MethodGet, "/auth", nil)
+			require.NoError(t, err)
+
+			tc.setupAuth(t, req)
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 			tc.checkResponse(t, w)

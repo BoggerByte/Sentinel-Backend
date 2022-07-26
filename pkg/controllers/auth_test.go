@@ -70,6 +70,9 @@ func TestAuthController_RefreshToken(t *testing.T) {
 					GetSession(gomock.Any(), gomock.Eq(session.ID)).
 					Times(1).
 					Return(memdb.Session{}, sql.ErrNoRows)
+				store.EXPECT().
+					SetSession(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(0)
 			},
 			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, w.Code)
@@ -84,6 +87,9 @@ func TestAuthController_RefreshToken(t *testing.T) {
 					Return(memdb.Session{
 						IsBlocked: true,
 					}, nil)
+				store.EXPECT().
+					SetSession(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(0)
 			},
 			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, w.Code)
@@ -99,6 +105,9 @@ func TestAuthController_RefreshToken(t *testing.T) {
 						IsBlocked: false,
 						DiscordID: "",
 					}, nil)
+				store.EXPECT().
+					SetSession(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(0)
 			},
 			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, w.Code)
@@ -109,6 +118,25 @@ func TestAuthController_RefreshToken(t *testing.T) {
 			buildStubs: func(store *mockmemdb.MockStore) {
 				store.EXPECT().
 					GetSession(gomock.Any(), gomock.Eq(session.ID)).
+					Times(1).
+					Return(memdb.Session{}, sql.ErrConnDone)
+				store.EXPECT().
+					SetSession(gomock.Any(), gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, w.Code)
+			},
+		},
+		{
+			name: "InternalServerError/DBSetSession",
+			buildStubs: func(store *mockmemdb.MockStore) {
+				store.EXPECT().
+					GetSession(gomock.Any(), gomock.Eq(session.ID)).
+					Times(1).
+					Return(session, nil)
+				store.EXPECT().
+					SetSession(gomock.Any(), gomock.Any(), gomock.Any()).
 					Times(1).
 					Return(memdb.Session{}, sql.ErrConnDone)
 			},

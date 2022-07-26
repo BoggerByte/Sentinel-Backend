@@ -17,7 +17,7 @@ func NewUserController(store db.Store) *UserController {
 	return &UserController{store: store}
 }
 
-func (ctrl *UserController) Get(c *gin.Context) {
+func (ctrl *UserController) GetUser(c *gin.Context) {
 	payload := c.MustGet(middlewares.AuthorizationPayloadKey).(*token.Payload)
 
 	account, err := ctrl.store.GetUser(c, payload.UserDiscordID)

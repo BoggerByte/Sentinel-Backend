@@ -40,7 +40,7 @@ func NewOauth2Controller(
 	}
 }
 
-func (ctrl *Oauth2Controller) NewURL(c *gin.Context) {
+func (ctrl *Oauth2Controller) GetNewOauth2URL(c *gin.Context) {
 	state := utils.RandomString(32)
 
 	err := ctrl.memStore.SetOauth2Flow(c, state, memdb.Oauth2Flow{
@@ -58,13 +58,13 @@ func (ctrl *Oauth2Controller) NewURL(c *gin.Context) {
 	})
 }
 
-func (ctrl *Oauth2Controller) NewInviteBotURL(c *gin.Context) {
+func (ctrl *Oauth2Controller) GetNewInviteBotURL(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"url": ctrl.discordOauth2Service.NewInviteBotURL(),
 	})
 }
 
-func (ctrl *Oauth2Controller) DiscordCallback(c *gin.Context) {
+func (ctrl *Oauth2Controller) HandleDiscordCallback(c *gin.Context) {
 	var form forms.Oauth2RedirectForm
 	if err := c.ShouldBindQuery(&form); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))

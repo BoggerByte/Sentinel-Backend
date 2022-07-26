@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
+	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -46,6 +47,25 @@ func NewAuthMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		}
 
 		c.Set(AuthorizationPayloadKey, payload)
+		c.Next()
+	}
+}
+
+func NewDiscordBotAuthMiddleware(config utils.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sentinelAPISecret := c.GetHeader(AuthorizationHeaderKey)
+		if len(sentinelAPISecret) == 0 {
+			err := errors.New("authentication header is not provided")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+			return
+		}
+
+		if sentinelAPISecret != config.DiscordBotSentinelAPISecret {
+			err := errors.New("invalid credentials")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+			return
+		}
+
 		c.Next()
 	}
 }

@@ -30,26 +30,6 @@ func NewGuildController(store db.Store) *GuildController {
 	return &GuildController{store: store}
 }
 
-func (ctrl *GuildController) GetGuild(c *gin.Context) {
-	var uri forms.GetGuildURI
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	guild, err := ctrl.store.GetGuild(c, uri.DiscordID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	c.JSON(http.StatusOK, guild)
-}
-
 func (ctrl *GuildController) GetUserGuild(c *gin.Context) {
 	var uri forms.GetUserGuildURI
 	if err := c.ShouldBindUri(&uri); err != nil {
@@ -117,32 +97,17 @@ func (ctrl *GuildController) CreateOrUpdateGuilds(c *gin.Context) {
 
 	err := ctrl.store.ExecTx(c, func(q *db.Queries) error {
 		for _, guild := range json.Guilds {
-			if _, err := q.CreateOrUpdateGuild(c, guild); err != nil {
+			_, err := q.CreateOrUpdateGuild(c, db.CreateOrUpdateGuildParams{
+				DiscordID:      guild.DiscordID,
+				Name:           guild.Name,
+				Icon:           guild.Icon,
+				OwnerDiscordID: guild.OwnerDiscordID,
+			})
+			if err != nil {
 				return err
 			}
 		}
 		return nil
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-func (ctrl *GuildController) CreateOrUpdateGuild(c *gin.Context) {
-	var json forms.CreateOrUpdateGuildJSON
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	var _, err = ctrl.store.CreateOrUpdateGuild(c, db.CreateOrUpdateGuildParams{
-		DiscordID:      json.DiscordID,
-		Name:           json.Name,
-		Icon:           json.Icon,
-		OwnerDiscordID: json.OwnerDiscordID,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))

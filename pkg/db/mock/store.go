@@ -154,10 +154,25 @@ func (mr *MockStoreMockRecorder) GetGuildConfig(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGuildConfig", reflect.TypeOf((*MockStore)(nil).GetGuildConfig), arg0, arg1)
 }
 
+// GetGuildsConfigs mocks base method.
+func (m *MockStore) GetGuildsConfigs(arg0 context.Context) ([]db.GuildConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGuildsConfigs", arg0)
+	ret0, _ := ret[0].([]db.GuildConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGuildsConfigs indicates an expected call of GetGuildsConfigs.
+func (mr *MockStoreMockRecorder) GetGuildsConfigs(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGuildsConfigs", reflect.TypeOf((*MockStore)(nil).GetGuildsConfigs), arg0)
+}
+
 // GetUser mocks base method.
 func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (db.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGuild", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)
 	ret0, _ := ret[0].(db.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
@@ -166,7 +181,7 @@ func (m *MockStore) GetUser(arg0 context.Context, arg1 string) (db.User, error) 
 // GetUser indicates an expected call of GetUser.
 func (mr *MockStoreMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGuild", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStore)(nil).GetUser), arg0, arg1)
 }
 
 // GetUserGuild mocks base method.

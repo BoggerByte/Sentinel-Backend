@@ -2,8 +2,8 @@ package controllers
 
 import "github.com/gin-gonic/gin"
 
-type Account interface {
-	Get(c *gin.Context)
+type User interface {
+	GetUser(c *gin.Context)
 }
 
 type Auth interface {
@@ -11,25 +11,26 @@ type Auth interface {
 }
 
 type Guild interface {
-	Get(c *gin.Context)
-	GetUserOne(c *gin.Context)
-	GetUserAll(c *gin.Context)
+	GetUserGuild(c *gin.Context)
+	GetUserGuilds(c *gin.Context)
+	CreateOrUpdateGuilds(c *gin.Context)
 }
 
 type GuildConfig interface {
-	Overwrite(c *gin.Context)
-	Get(c *gin.Context)
-	GetPreset(c *gin.Context)
+	OverwriteGuildConfig(c *gin.Context)
+	GetGuildsConfigs(c *gin.Context)
+	GetGuildConfig(c *gin.Context)
+	GetGuildConfigPreset(c *gin.Context)
 }
 
 type Oauth2 interface {
-	NewURL(c *gin.Context)
-	NewInviteBotURL(c *gin.Context)
-	DiscordCallback(c *gin.Context)
+	GetNewOauth2URL(c *gin.Context)
+	GetNewInviteBotURL(c *gin.Context)
+	HandleDiscordCallback(c *gin.Context)
 }
 
 type Controllers struct {
-	Account
+	User
 	Auth
 	Guild
 	GuildConfig

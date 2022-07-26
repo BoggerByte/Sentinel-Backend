@@ -44,17 +44,6 @@ func (q *Queries) CreateOrUpdateGuild(ctx context.Context, arg CreateOrUpdateGui
 	return i, err
 }
 
-const deleteGuild = `-- name: DeleteGuild :exec
-DELETE
-FROM guild
-WHERE discord_id = $1
-`
-
-func (q *Queries) DeleteGuild(ctx context.Context, discordID string) error {
-	_, err := q.db.ExecContext(ctx, deleteGuild, discordID)
-	return err
-}
-
 const getGuild = `-- name: GetGuild :one
 SELECT g.id, g.discord_id, g.owner_discord_id, g.name, g.icon,
        (gc.json::json -> 'permissions' ->> 'read')::bigint AS config_read,

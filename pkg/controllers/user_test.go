@@ -114,7 +114,7 @@ func TestUserController_Get(t *testing.T) {
 			authMiddleware := middlewares.NewAuthMiddleware(tokenMaker)
 			userController := NewUserController(store)
 			router := gin.New()
-			router.GET("/api/v1/users/me", authMiddleware, userController.Get)
+			router.GET("/api/v1/users/me", authMiddleware, userController.GetUser)
 
 			url := "/api/v1/users/me"
 			req, err := http.NewRequest(http.MethodGet, url, nil)

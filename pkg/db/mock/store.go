@@ -110,62 +110,6 @@ func (mr *MockStoreMockRecorder) CreateUserGuildRel(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserGuildRel", reflect.TypeOf((*MockStore)(nil).CreateUserGuildRel), arg0, arg1)
 }
 
-// DeleteGuild mocks base method.
-func (m *MockStore) DeleteGuild(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteGuild", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteGuild indicates an expected call of DeleteGuild.
-func (mr *MockStoreMockRecorder) DeleteGuild(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGuild", reflect.TypeOf((*MockStore)(nil).DeleteGuild), arg0, arg1)
-}
-
-// DeleteGuildConfig mocks base method.
-func (m *MockStore) DeleteGuildConfig(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteGuildConfig", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteGuildConfig indicates an expected call of DeleteGuildConfig.
-func (mr *MockStoreMockRecorder) DeleteGuildConfig(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteGuildConfig", reflect.TypeOf((*MockStore)(nil).DeleteGuildConfig), arg0, arg1)
-}
-
-// DeleteUser mocks base method.
-func (m *MockStore) DeleteUser(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteUser indicates an expected call of DeleteUser.
-func (mr *MockStoreMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockStore)(nil).DeleteUser), arg0, arg1)
-}
-
-// DeleteUserGuildRel mocks base method.
-func (m *MockStore) DeleteUserGuildRel(arg0 context.Context, arg1 db.DeleteUserGuildRelParams) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUserGuildRel", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteUserGuildRel indicates an expected call of DeleteUserGuildRel.
-func (mr *MockStoreMockRecorder) DeleteUserGuildRel(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserGuildRel", reflect.TypeOf((*MockStore)(nil).DeleteUserGuildRel), arg0, arg1)
-}
-
 // ExecTx mocks base method.
 func (m *MockStore) ExecTx(arg0 context.Context, arg1 func(*db.Queries) error) error {
 	m.ctrl.T.Helper()
@@ -208,6 +152,21 @@ func (m *MockStore) GetGuildConfig(arg0 context.Context, arg1 string) (db.GuildC
 func (mr *MockStoreMockRecorder) GetGuildConfig(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGuildConfig", reflect.TypeOf((*MockStore)(nil).GetGuildConfig), arg0, arg1)
+}
+
+// GetGuildsConfigs mocks base method.
+func (m *MockStore) GetGuildsConfigs(arg0 context.Context) ([]db.GuildConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGuildsConfigs", arg0)
+	ret0, _ := ret[0].([]db.GuildConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetGuildsConfigs indicates an expected call of GetGuildsConfigs.
+func (mr *MockStoreMockRecorder) GetGuildsConfigs(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGuildsConfigs", reflect.TypeOf((*MockStore)(nil).GetGuildsConfigs), arg0)
 }
 
 // GetUser mocks base method.

@@ -36,21 +36,31 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 
 	api := router.Group("/api/v1")
 	{
-		api.GET("/oauth2/new_url", controllers.Oauth2.NewURL)
-		api.GET("/oauth2/new_invite_bot_url", controllers.Oauth2.NewInviteBotURL)
-		api.GET("/oauth2/discord_callback", controllers.Oauth2.DiscordCallback)
+		api.GET("/oauth2/new_url", controllers.GetNewOauth2URL)
+		api.GET("/oauth2/new_invite_bot_url", controllers.GetNewInviteBotURL)
+		api.GET("/oauth2/discord_callback", controllers.HandleDiscordCallback)
 
-		api.POST("/auth/paseto/refresh", middlewares.Auth, controllers.Auth.RefreshToken)
+		api.POST("/auth/paseto/refresh", middlewares.Auth, controllers.RefreshToken)
 
-		api.GET("/users/me", middlewares.Auth, controllers.Account.Get)
-		api.GET("/users/me/guilds", middlewares.Auth, controllers.Guild.GetUserAll)
-		api.GET("/users/me/guilds/:discord_id", middlewares.Auth, controllers.Guild.GetUserOne)
+		api.GET("/users/me", middlewares.Auth, controllers.GetUser)
+		api.GET("/users/me/guilds", middlewares.Auth, controllers.GetUserGuilds)
+		api.GET("/users/me/guilds/:discord_id", middlewares.Auth, controllers.GetUserGuild)
 
-		api.GET("/guilds/:discord_id", controllers.Guild.Get)
+		api.GET("/guilds/configs/presets/:preset", controllers.GetGuildConfigPreset)
+		api.GET("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Get(), controllers.GetGuildConfig)
+		api.POST("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Overwrite(), controllers.OverwriteGuildConfig)
+	}
 
-		api.POST("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Overwrite(), controllers.GuildConfig.Overwrite)
-		api.GET("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Get(), controllers.GuildConfig.Get)
-		api.GET("/guilds/configs/presets/:preset", controllers.GuildConfig.GetPreset)
+	discordBotApi := router.Group("/discord_bot_api/v1").
+		Use(middlewares.DiscordBotAuth)
+	{
+		discordBotApi.POST("/guilds", controllers.CreateOrUpdateGuilds)
+
+		discordBotApi.GET("/guilds/configs", controllers.GetGuildsConfigs)
+		discordBotApi.GET("/guilds/configs/presets/:preset", controllers.GetGuildConfigPreset)
+		discordBotApi.GET("/guilds/:discord_id/config", controllers.GetGuildConfig)
+
+		//discordBotApi.GET("/ws", controllers.Websocket)
 	}
 
 	return &Server{router: router}

@@ -62,7 +62,7 @@ func main() {
 	})
 
 	controllersV1 := controllers.Controllers{
-		Account:     controllers.NewUserController(store),
+		User:        controllers.NewUserController(store),
 		Auth:        controllers.NewAuthController(store, memStore, config, tokenMaker),
 		Guild:       controllers.NewGuildController(store),
 		GuildConfig: controllers.NewGuildConfigController(store),
@@ -80,14 +80,15 @@ func main() {
 			AllowWebSockets:        true,
 			AllowFiles:             true,
 		}),
-		Auth: middlewares.NewAuthMiddleware(tokenMaker),
+		Auth:           middlewares.NewAuthMiddleware(tokenMaker),
+		DiscordBotAuth: middlewares.NewDiscordBotAuthMiddleware(config),
 		Permissions: middlewares.Permissions{
 			GuildConfig: permissions.NewGuildConfigPermissions(store),
 		},
 	}
 
 	server := pkg.NewServer(controllersV1, middlewaresV1)
-	if err := server.Run(config.Address); err != nil {
+	if err := server.Run(config.ServerHTTPAddress); err != nil {
 		logrus.Fatalf("Error occured while running server: %v", err.Error())
 	}
 }

@@ -6,7 +6,7 @@ postgres:
 		-p 5432:5432 \
 		--rm \
 		--name=sentinel-db \
-		postgres:14.3
+		postgres:14.3-alpine
 
 redis:
 	docker run -d \
@@ -25,13 +25,17 @@ migratedown:
 	migrate -path ./pkg/db/migration -database "postgresql://root:qwerty@localhost:5432/sentinel_db?sslmode=disable" down
 
 sqlc:
+	rm -f pkg/db/sqlc/*.sql.go
 	sqlc generate -f ./cfg/sqlc.yaml
 
 mock:
 	mockgen -package mockdb -destination pkg/db/mock/store.go github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc Store
 	mockgen -package mockmemdb -destination pkg/db/memory_mock/store.go github.com/BoggerByte/Sentinel-backend.git/pkg/db/memory Store
 
+test:
+	go test ./pkg/...
+
 server:
 	go run cmd/main.go
 
-.PHONY: postgres redis dropdb migrateup migratedown sqlc server
+.PHONY: postgres redis dropdb migrateup migratedown sqlc mock server

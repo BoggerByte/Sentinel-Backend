@@ -37,10 +37,7 @@ func (ctrl *GuildConfigController) GetGuildConfigPreset(c *gin.Context) {
 
 func (ctrl *GuildConfigController) OverwriteGuildConfig(c *gin.Context) {
 	var uri forms.RequireDiscordIDRequest
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+	_ = c.ShouldBindUri(&uri)
 	var newGuildConfig forms.OverwriteGuildConfigJSON
 	if err := c.ShouldBindJSON(&newGuildConfig); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
@@ -67,10 +64,7 @@ func (ctrl *GuildConfigController) OverwriteGuildConfig(c *gin.Context) {
 
 func (ctrl *GuildConfigController) GetGuildConfig(c *gin.Context) {
 	var uri forms.RequireDiscordIDRequest
-	if err := c.ShouldBindUri(&uri); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+	_ = c.ShouldBindUri(&uri)
 
 	guildConfig, err := ctrl.store.GetGuildConfig(c, uri.DiscordID)
 	if err != nil {

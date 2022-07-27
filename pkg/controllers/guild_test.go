@@ -1,13 +1,10 @@
 package controllers
 
 import (
-	"bytes"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	mockdb "github.com/BoggerByte/Sentinel-backend.git/pkg/db/mock"
 	db "github.com/BoggerByte/Sentinel-backend.git/pkg/db/sqlc"
-	"github.com/BoggerByte/Sentinel-backend.git/pkg/forms"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/middlewares"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/modules/token"
 	"github.com/BoggerByte/Sentinel-backend.git/pkg/utils"
@@ -219,88 +216,4 @@ func TestGuildController_GetUserGuilds(t *testing.T) {
 			tc.checkResponse(t, w)
 		})
 	}
-}
-
-func TestGuildController_CreateOrUpdateGuild(t *testing.T) {
-	gin.SetMode(gin.ReleaseMode)
-
-	guild := generateRandomGuild()
-	guildJSON, err := json.Marshal(forms.CreateOrUpdateGuildsJSON{
-		Guilds: []forms.CreateOrUpdateGuildJSON{
-			{
-				DiscordID:      guild.DiscordID,
-				Name:           guild.Name,
-				Icon:           guild.Icon,
-				OwnerDiscordID: guild.OwnerDiscordID,
-			},
-		}})
-	require.NoError(t, err)
-
-	testCases := []struct {
-		name          string
-		guildJSON     []byte
-		buildStubs    func(store *mockdb.MockStore)
-		checkResponse func(t *testing.T, w *httptest.ResponseRecorder)
-	}{
-		{
-			name:      "OK",
-			guildJSON: guildJSON,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().ExecTx(gomock.Any(), gomock.Any()).
-					Times(1).
-					Return(nil)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, w.Code)
-			},
-		},
-		{
-			name:      "InternalServerError/ExecTx",
-			guildJSON: guildJSON,
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().ExecTx(gomock.Any(), gomock.Any()).
-					Times(1).
-					Return(sql.ErrNoRows)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, w.Code)
-			},
-		},
-		{
-			name:      "BadRequest/JSON",
-			guildJSON: []byte("invalid JSON"),
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().ExecTx(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checkResponse: func(t *testing.T, w *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, w.Code)
-			},
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			store := mockdb.NewMockStore(ctrl)
-			tc.buildStubs(store)
-
-			guildController := NewGuildController(store)
-			router := gin.New()
-			router.POST("/api/v1/guilds", guildController.CreateOrUpdateGuilds)
-
-			url := "/api/v1/guilds"
-			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(tc.guildJSON))
-			require.NoError(t, err)
-
-			w := httptest.NewRecorder()
-			router.ServeHTTP(w, req)
-			tc.checkResponse(t, w)
-		})
-	}
-}
-
-func TestGuildController_CreateOrUpdateGuilds(t *testing.T) {
-	gin.SetMode(gin.ReleaseMode)
 }

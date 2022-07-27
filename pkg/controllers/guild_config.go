@@ -74,13 +74,3 @@ func (ctrl *GuildConfigController) GetGuildConfig(c *gin.Context) {
 
 	c.JSON(http.StatusOK, guildConfig)
 }
-
-func (ctrl *GuildConfigController) GetGuildsConfigs(c *gin.Context) {
-	guildsConfigs, err := ctrl.store.GetGuildsConfigs(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	c.JSON(http.StatusOK, guildsConfigs)
-}

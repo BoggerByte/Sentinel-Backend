@@ -14,8 +14,7 @@ type Permissions struct {
 }
 
 type Middlewares struct {
-	CORS           gin.HandlerFunc
-	Auth           gin.HandlerFunc
-	DiscordBotAuth gin.HandlerFunc
-	Permissions    Permissions
+	CORS        gin.HandlerFunc
+	Auth        gin.HandlerFunc
+	Permissions Permissions
 }

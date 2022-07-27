@@ -51,18 +51,6 @@ func NewServer(controllers controllers.Controllers, middlewares middlewares.Midd
 		api.POST("/guilds/:discord_id/config", middlewares.Auth, perms.GuildConfig.Overwrite(), controllers.OverwriteGuildConfig)
 	}
 
-	discordBotApi := router.Group("/discord_bot_api/v1").
-		Use(middlewares.DiscordBotAuth)
-	{
-		discordBotApi.POST("/guilds", controllers.CreateOrUpdateGuilds)
-
-		discordBotApi.GET("/guilds/configs", controllers.GetGuildsConfigs)
-		discordBotApi.GET("/guilds/configs/presets/:preset", controllers.GetGuildConfigPreset)
-		discordBotApi.GET("/guilds/:discord_id/config", controllers.GetGuildConfig)
-
-		//discordBotApi.GET("/ws", controllers.Websocket)
-	}
-
 	return &Server{router: router}
 }
 

@@ -13,12 +13,10 @@ type Auth interface {
 type Guild interface {
 	GetUserGuild(c *gin.Context)
 	GetUserGuilds(c *gin.Context)
-	CreateOrUpdateGuilds(c *gin.Context)
 }
 
 type GuildConfig interface {
 	OverwriteGuildConfig(c *gin.Context)
-	GetGuildsConfigs(c *gin.Context)
 	GetGuildConfig(c *gin.Context)
 	GetGuildConfigPreset(c *gin.Context)
 }

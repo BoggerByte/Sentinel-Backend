@@ -80,8 +80,7 @@ func main() {
 			AllowWebSockets:        true,
 			AllowFiles:             true,
 		}),
-		Auth:           middlewares.NewAuthMiddleware(tokenMaker),
-		DiscordBotAuth: middlewares.NewDiscordBotAuthMiddleware(config),
+		Auth: middlewares.NewAuthMiddleware(tokenMaker),
 		Permissions: middlewares.Permissions{
 			GuildConfig: permissions.NewGuildConfigPermissions(store),
 		},

@@ -87,32 +87,3 @@ func (ctrl *GuildController) GetUserGuilds(c *gin.Context) {
 
 	c.JSON(http.StatusOK, rGuilds)
 }
-
-func (ctrl *GuildController) CreateOrUpdateGuilds(c *gin.Context) {
-	var json forms.CreateOrUpdateGuildsJSON
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	err := ctrl.store.ExecTx(c, func(q *db.Queries) error {
-		for _, guild := range json.Guilds {
-			_, err := q.CreateOrUpdateGuild(c, db.CreateOrUpdateGuildParams{
-				DiscordID:      guild.DiscordID,
-				Name:           guild.Name,
-				Icon:           guild.Icon,
-				OwnerDiscordID: guild.OwnerDiscordID,
-			})
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{})
-}

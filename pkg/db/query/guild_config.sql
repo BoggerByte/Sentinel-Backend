@@ -21,11 +21,6 @@ FROM guild g
          JOIN guild_config c ON g.id = c.id
 WHERE g.discord_id = $1;
 
--- name: GetGuildsConfigs :many
-SELECT c.*
-FROM guild g
-         JOIN guild_config c ON g.id = c.id;
-
 -- name: UpdateGuildConfig :exec
 UPDATE guild_config c
 SET json = $1
